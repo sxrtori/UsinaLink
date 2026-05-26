@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil Usina | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="orange-mode" data-user-role="usina" data-profile-kind="usina">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav orange-nav" data-role-nav="usina">
+        <a href="dashboard-usina.html">Dashboard usina</a>
+        <a class="active" href="perfil-usina.html">Perfil</a>
+        <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
+        <a href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
+        <a href="propostas-enviadas.html">Propostas enviadas</a>
+        <a href="index.html">Sair</a>
+      </nav>
+    </aside>
+
+    <main class="app-main">
+      <section class="profile-hero enhanced">
+        <div class="profile-banner usina-banner"></div>
+        <div class="profile-head">
+          <div class="avatar orange-avatar" aria-hidden="true">AT</div>
+          <div><h1>Usina Atlas Metais</h1><p>Atualize dados industriais e operacionais.</p></div>
+        </div>
+        <nav class="tabs profile-tabs orange-active" aria-label="Tipo de perfil">
+          <button class="tab-pill orange-tab active" type="button">Usina</button>
+        </nav>
+      </section>
+
+      <section class="profile-grid">
+        <aside class="card profile-menu sidebar-card">
+          <a class="active" href="#" data-profile-section="gerais"><span>i</span>Informa&ccedil;&otilde;es Gerais</a>
+          <a href="#" data-profile-section="contato"><span>@</span>Contato</a>
+          <a href="#" data-profile-section="endereco"><span>#</span>Endere&ccedil;o</a>
+          <a href="#" data-profile-section="producao"><span>PR</span>Produ&ccedil;&atilde;o</a>
+          <a href="#" data-profile-section="certificacoes"><span>OK</span>Certifica&ccedil;&otilde;es</a>
+          <a href="#" data-profile-section="seguranca"><span>*</span>Seguran&ccedil;a</a>
+          <a href="#" data-profile-section="notificacoes"><span>!</span>Notifica&ccedil;&otilde;es</a>
+        </aside>
+
+        <article class="card form-panel profile-form-card">
+          <div class="panel-heading with-divider">
+            <h2 id="profile-section-title">Informa&ccedil;&otilde;es gerais</h2>
+            <p id="profile-section-subtitle">Dados industriais exibidos para empresas compradoras.</p>
+          </div>
+          <form class="form-grid js-demo-form" id="profile-dynamic-form"></form>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

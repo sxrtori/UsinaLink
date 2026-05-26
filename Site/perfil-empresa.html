@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil Empresa | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-user-role="empresa" data-profile-kind="empresa">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav" data-role-nav="empresa">
+        <a href="dashboard-empresa.html">Dashboard empresa</a>
+        <a class="active" href="perfil-empresa.html">Perfil</a>
+        <a href="funcionarios.html">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html">Propostas</a>
+        <a href="index.html">Sair</a>
+      </nav>
+    </aside>
+
+    <main class="app-main">
+      <section class="profile-hero enhanced">
+        <div class="profile-banner"></div>
+        <div class="profile-head">
+          <div class="avatar" aria-hidden="true">MF</div>
+          <div><h1>Metal Forte Componentes Industriais</h1><p>Atualize dados comerciais, fiscais e operacionais.</p></div>
+        </div>
+        <nav class="tabs profile-tabs" aria-label="Tipo de perfil">
+          <button class="tab-pill active" type="button">Empresa</button>
+        </nav>
+      </section>
+
+      <section class="profile-grid">
+        <aside class="card profile-menu sidebar-card">
+          <a class="active" href="#" data-profile-section="gerais"><span>i</span>Informa&ccedil;&otilde;es Gerais</a>
+          <a href="#" data-profile-section="contato"><span>@</span>Contato</a>
+          <a href="#" data-profile-section="endereco"><span>#</span>Endere&ccedil;o</a>
+          <a href="#" data-profile-section="documentos"><span>DOC</span>Documentos</a>
+          <a href="#" data-profile-section="seguranca"><span>*</span>Seguran&ccedil;a</a>
+          <a href="#" data-profile-section="notificacoes"><span>!</span>Notifica&ccedil;&otilde;es</a>
+        </aside>
+
+        <article class="card form-panel profile-form-card">
+          <div class="panel-heading with-divider">
+            <h2 id="profile-section-title">Informa&ccedil;&otilde;es gerais</h2>
+            <p id="profile-section-subtitle">Dados principais exibidos no perfil comercial da organiza&ccedil;&atilde;o.</p>
+          </div>
+          <form class="form-grid js-demo-form" id="profile-dynamic-form"></form>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

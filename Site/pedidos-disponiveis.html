@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos Dispon&iacute;veis | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="orange-mode" data-user-role="usina">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav orange-nav" data-role-nav="usina">
+        <a href="dashboard-usina.html">Dashboard usina</a>
+        <a href="perfil-usina.html">Perfil</a>
+        <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
+        <a class="active" href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
+        <a href="propostas-enviadas.html">Propostas enviadas</a>
+        <a href="index.html">Sair</a>
+      </nav>
+    </aside>
+
+    <main class="app-main">
+      <div class="page-header">
+        <div><span class="eyebrow orange-text">Oportunidades</span><h1>Pedidos dispon&iacute;veis</h1><p>Solicita&ccedil;&otilde;es abertas por empresas para receber propostas.</p></div>
+      </div>
+      <section class="card table-card order-section" data-search-scope>
+        <div class="table-toolbar">
+          <label class="search-box wide-search"><span>Buscar</span><input class="js-table-search" type="search" placeholder="Pe&ccedil;a, empresa, material ou regi&atilde;o"></label>
+        </div>
+        <div class="quick-filters">
+          <button class="filter-pill active js-order-filter" type="button" data-filter="all">Todos</button>
+          <button class="filter-pill js-order-filter" type="button" data-filter="alta">Alta urg&ecirc;ncia</button>
+          <button class="filter-pill js-order-filter" type="button" data-filter="sudeste">Sudeste</button>
+          <button class="filter-pill js-order-filter" type="button" data-filter="prazo">Menor prazo</button>
+        </div>
+        <div class="order-card-grid">
+          <article class="card order-opportunity" data-search-row data-region="sudeste" data-urgency="normal" data-days="20" data-description="Eixo para conjunto de transmissao com tratamento termico." data-file="desenho-eixo-estriado.pdf">
+            <h2>Eixo estriado</h2><p>Metal Forte Componentes</p>
+            <div class="quote-facts compact"><div><span>Material</span><strong>A&ccedil;o 4140 temperado</strong></div><div><span>Quantidade</span><strong>60 unidades</strong></div><div><span>Prazo</span><strong>20 dias</strong></div><div><span>Regi&atilde;o</span><strong>Sudeste</strong></div><div><span>Urg&ecirc;ncia</span><strong>Normal</strong></div></div>
+            <div class="card-actions"><button class="btn btn-ghost js-open-order-detail" type="button">Ver detalhes</button><a class="btn btn-orange" href="enviar-proposta.html">Enviar proposta</a></div>
+          </article>
+          <article class="card order-opportunity" data-search-row data-region="sul" data-urgency="alta" data-days="12" data-description="Flange para linha industrial com acabamento usinado." data-file="flange-industrial.dwg">
+            <h2>Flange industrial</h2><p>Energia Sul</p>
+            <div class="quote-facts compact"><div><span>Material</span><strong>A&ccedil;o carbono</strong></div><div><span>Quantidade</span><strong>45 unidades</strong></div><div><span>Prazo</span><strong>12 dias</strong></div><div><span>Regi&atilde;o</span><strong>Sul</strong></div><div><span>Urg&ecirc;ncia</span><strong>Alta</strong></div></div>
+            <div class="card-actions"><button class="btn btn-ghost js-open-order-detail" type="button">Ver detalhes</button><a class="btn btn-orange" href="enviar-proposta.html">Enviar proposta</a></div>
+          </article>
+          <article class="card order-opportunity" data-search-row data-region="sudeste" data-urgency="normal" data-days="25" data-description="Suporte estrutural em aluminio para linha de montagem." data-file="suporte-metalico.pdf">
+            <h2>Suporte met&aacute;lico</h2><p>ValeTech</p>
+            <div class="quote-facts compact"><div><span>Material</span><strong>Alum&iacute;nio 6061</strong></div><div><span>Quantidade</span><strong>300 unidades</strong></div><div><span>Prazo</span><strong>25 dias</strong></div><div><span>Regi&atilde;o</span><strong>Sudeste</strong></div><div><span>Urg&ecirc;ncia</span><strong>Normal</strong></div></div>
+            <div class="card-actions"><button class="btn btn-ghost js-open-order-detail" type="button">Ver detalhes</button><a class="btn btn-orange" href="enviar-proposta.html">Enviar proposta</a></div>
+          </article>
+          <article class="card order-opportunity" data-search-row data-region="nordeste" data-urgency="alta" data-days="18" data-description="Engrenagem helicoidal com cementacao e controle de rugosidade." data-file="engrenagem-helicoidal.step">
+            <h2>Engrenagem helicoidal</h2><p>Minas Parts</p>
+            <div class="quote-facts compact"><div><span>Material</span><strong>A&ccedil;o cementado</strong></div><div><span>Quantidade</span><strong>20 unidades</strong></div><div><span>Prazo</span><strong>18 dias</strong></div><div><span>Regi&atilde;o</span><strong>Nordeste</strong></div><div><span>Urg&ecirc;ncia</span><strong>Alta</strong></div></div>
+            <div class="card-actions"><button class="btn btn-ghost js-open-order-detail" type="button">Ver detalhes</button><a class="btn btn-orange" href="enviar-proposta.html">Enviar proposta</a></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="order-modal" hidden>
+    <section class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="order-modal-title">
+      <div class="modal-header"><div><span class="eyebrow orange-text">Detalhes do pedido</span><h2 id="order-modal-title">Detalhes da pe&ccedil;a</h2></div><button class="modal-close js-close-order-modal" type="button">x</button></div>
+      <div class="detail-list" id="order-modal-content"></div>
+      <div class="form-actions"><button class="btn btn-ghost js-close-order-modal" type="button">Cancelar</button><a class="btn btn-orange" href="enviar-proposta.html">Enviar proposta</a></div>
+    </section>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Empresa | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-user-role="empresa">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav" data-role-nav="empresa">
+        <a class="active" href="dashboard-empresa.html">Dashboard empresa</a>
+        <a href="perfil-empresa.html">Perfil</a>
+        <a href="funcionarios.html">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html">Propostas</a>
+        <a href="index.html">Sair</a>
+      </nav>
+    </aside>
+
+    <main class="app-main">
+      <header class="app-header">
+        <div>
+          <span class="eyebrow">Area da empresa</span>
+          <h1>Metal Forte</h1>
+        </div>
+        <div class="user-strip">
+          <div><strong>Ana Martins</strong><span>Compras corporativas</span></div>
+          <a class="btn btn-ghost btn-small" href="index.html">Sair</a>
+        </div>
+      </header>
+
+      <section class="summary-grid professional">
+        <article class="card summary-card"><span>Solicita&ccedil;&otilde;es abertas</span><strong>12</strong><small>3 com prazo cr&iacute;tico</small></article>
+        <article class="card summary-card"><span>Propostas recebidas</span><strong>37</strong><small>+8 nesta semana</small></article>
+        <article class="card summary-card"><span>Pedidos em andamento</span><strong>6</strong><small>R$ 84 mil em compras</small></article>
+        <article class="card summary-card"><span>Pedidos finalizados</span><strong>24</strong><small>98% no prazo</small></article>
+      </section>
+
+      <section class="card table-card" data-search-scope>
+        <div class="table-toolbar">
+          <div>
+            <h2>Solicita&ccedil;&otilde;es recentes</h2>
+            <p>Pedidos publicados e suas propostas recebidas.</p>
+          </div>
+          <div class="toolbar-actions">
+            <label class="search-box"><span>Buscar</span><input class="js-table-search" type="search" placeholder="Nome, categoria ou status"></label>
+            <a class="btn btn-small" href="nova-solicitacao.html">Nova solicita&ccedil;&atilde;o de pe&ccedil;a</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome da pe&ccedil;a</th><th>Categoria</th><th>Quantidade</th><th>Status</th><th>Propostas</th><th>Prazo</th></tr></thead>
+            <tbody>
+              <tr data-search-row><td>Eixo usinado</td><td>Usinagem</td><td>120</td><td><span class="badge info">Aberta</span></td><td>8</td><td>12/06/2026</td></tr>
+              <tr data-search-row><td>Flange industrial</td><td>Caldeiraria</td><td>45</td><td><span class="badge warning">Em an&aacute;lise</span></td><td>5</td><td>18/06/2026</td></tr>
+              <tr data-search-row><td>Engrenagem helicoidal</td><td>Transmiss&atilde;o</td><td>20</td><td><span class="badge success">Proposta aceita</span></td><td>11</td><td>25/06/2026</td></tr>
+              <tr data-search-row><td>Suporte met&aacute;lico</td><td>Corte e dobra</td><td>300</td><td><span class="badge muted">Finalizada</span></td><td>6</td><td>02/07/2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

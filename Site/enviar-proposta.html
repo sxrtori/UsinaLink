@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Proposta | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="orange-mode" data-user-role="usina">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav orange-nav" data-role-nav="usina">
+        <a href="dashboard-usina.html">Dashboard usina</a>
+        <a href="perfil-usina.html">Perfil</a>
+        <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
+        <a href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
+        <a class="active" href="propostas-enviadas.html">Propostas enviadas</a>
+        <a href="index.html">Sair</a>
+      </nav>
+    </aside>
+
+    <main class="app-main">
+      <div class="page-header proposal-page-header">
+        <div>
+          <span class="eyebrow orange-text">Or&ccedil;amento industrial</span>
+          <h1>Nova proposta</h1>
+          <p>Envie uma proposta para a solicita&ccedil;&atilde;o selecionada.</p>
+        </div>
+      </div>
+
+      <section class="quote-layout">
+        <article class="card quote-card">
+          <span class="quote-kicker">Detalhes da solicita&ccedil;&atilde;o</span>
+          <h2>Eixo estriado</h2>
+          <div class="quote-facts">
+            <div><span>Pe&ccedil;a</span><strong>Eixo estriado</strong></div>
+            <div><span>Material</span><strong>A&ccedil;o 4140 temperado</strong></div>
+            <div><span>Quantidade</span><strong>60 unidades</strong></div>
+            <div><span>Prazo desejado</span><strong>20 dias</strong></div>
+            <div><span>Regi&atilde;o</span><strong>Sudeste</strong></div>
+            <div><span>Categoria</span><strong>Usinagem</strong></div>
+            <div><span>Urg&ecirc;ncia</span><strong>Normal</strong></div>
+          </div>
+        </article>
+
+        <article class="card quote-card quote-form-card">
+          <span class="quote-kicker">Sua proposta</span>
+          <form class="form-grid quote-form js-proposal-form">
+            <label class="field">
+              <span>Valor da proposta</span>
+              <div class="input-wrap"><span class="input-symbol">R$</span><input id="proposal-value" type="text" placeholder="18.500,00" required></div>
+            </label>
+            <label class="field">
+              <span>Prazo de fabrica&ccedil;&atilde;o</span>
+              <div class="input-wrap"><span class="input-symbol">D</span><input id="proposal-deadline" type="text" placeholder="18 dias" required></div>
+            </label>
+            <label class="field">
+              <span>Valor do frete</span>
+              <div class="input-wrap"><span class="input-symbol">R$</span><input id="proposal-freight" type="text" placeholder="950,00"></div>
+            </label>
+            <label class="field">
+              <span>Condi&ccedil;&otilde;es de pagamento</span>
+              <div class="input-wrap"><span class="input-symbol">%</span><input type="text" placeholder="30% entrada e saldo na entrega"></div>
+            </label>
+            <label class="field span-2">
+              <span>Observa&ccedil;&otilde;es t&eacute;cnicas</span>
+              <textarea id="proposal-note" rows="5" placeholder="Inclua detalhes t&eacute;cnicos, validade, acabamento, embalagem e log&iacute;stica."></textarea>
+            </label>
+          </form>
+        </article>
+
+        <article class="card proposal-card quote-preview">
+          <span class="best-label orange-label">Pr&eacute;via da proposta</span>
+          <h2>Usina Atlas Metais</h2>
+          <strong class="price" id="preview-value">R$ 18.500,00</strong>
+          <dl>
+            <div><dt>Prazo de fabrica&ccedil;&atilde;o</dt><dd id="preview-deadline">18 dias</dd></div>
+            <div><dt>Frete</dt><dd id="preview-freight">R$ 950,00</dd></div>
+            <div><dt>Avalia&ccedil;&atilde;o</dt><dd>4,9/5</dd></div>
+          </dl>
+          <p id="preview-note">Proposta com inspe&ccedil;&atilde;o dimensional e embalagem refor&ccedil;ada.</p>
+        </article>
+      </section>
+
+      <div class="quote-actions">
+        <a class="btn btn-ghost" href="pedidos-disponiveis.html">Cancelar</a>
+        <button class="btn btn-orange js-send-proposal" type="button">Enviar proposta</button>
+      </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
