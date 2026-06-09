@@ -1,0 +1,345 @@
+MER - USINALINK
+
+Objetivo:
+Este documento descreve o Modelo Entidade-Relacionamento recomendado para o UsinaLink. Ele nao e um dump do banco atual; e a visao conceitual/logica que o sistema precisa para atender as telas existentes.
+
+TELAS/FLUXOS COBERTOS
+- Cadastro de empresa
+- Cadastro de usina
+- Cadastro de pessoa fisica
+- Login por tipo de conta
+- Dashboard empresa
+- Dashboard pessoa juridica com pecas comerciais
+- Dashboard usina
+- Perfil empresa
+- Perfil usina
+- Funcionarios de empresa
+- Funcionarios de usina
+- Convite de funcionario
+- Solicitacoes
+- Pedidos disponiveis
+- Propostas recebidas pela empresa
+- Propostas enviadas pela usina
+- Aceite/cancelamento de proposta
+
+ENTIDADES DO MER
+
+1. USUARIO
+Campos:
+- id_usuario PK
+- nome
+- email UNIQUE
+- senha_hash
+- tipo_usuario
+- status
+- data_criacao
+- data_atualizacao
+
+Tipos:
+- empresa
+- usina
+- pessoa_fisica
+- funcionario_empresa
+- funcionario_usina
+
+Relacionamentos:
+- Usuario 1:1 Empresa, quando tipo_usuario = empresa.
+- Usuario 1:1 Usina, quando tipo_usuario = usina.
+- Usuario 1:1 PessoaFisica, quando tipo_usuario = pessoa_fisica.
+- Usuario 1:1 Funcionario, quando tipo_usuario for funcionario_empresa ou funcionario_usina.
+
+2. EMPRESA
+Campos:
+- id_empresa PK
+- id_usuario FK
+- razao_social
+- nome_fantasia
+- cnpj UNIQUE
+- email
+- telefone
+- responsavel
+- cargo_responsavel
+- setor_atuacao
+- porte
+- descricao
+- status_validacao
+
+Relacionamentos:
+- Empresa 1:N Funcionarios.
+- Empresa 1:N Pedidos.
+- Empresa 1:N Propostas recebidas por meio dos pedidos.
+- Empresa 1:N Enderecos.
+
+3. USINA
+Campos:
+- id_usina PK
+- id_usuario FK
+- razao_social
+- nome_fantasia
+- cnpj UNIQUE
+- email
+- telefone
+- responsavel
+- especialidade
+- capacidade_producao
+- descricao
+- status_validacao
+
+Relacionamentos:
+- Usina 1:N Funcionarios.
+- Usina 1:N Propostas.
+- Usina 1:N PecasComerciais, quando ofertar itens prontos.
+- Usina 1:N Enderecos.
+
+Observacao sobre o MER da imagem:
+- A usina nao deve depender de id_empresa como se fosse subordinada a uma empresa compradora. Usina deve ser uma conta independente, vinculada a Usuario.
+
+4. PESSOA_FISICA
+Campos:
+- id_pessoa_fisica PK
+- id_usuario FK
+- nome
+- cpf UNIQUE
+- email
+- telefone
+
+Relacionamentos:
+- PessoaFisica 1:N Enderecos, se o projeto passar a coletar endereco.
+
+5. FUNCIONARIO
+Campos:
+- id_funcionario PK
+- id_usuario FK opcional
+- id_empresa FK opcional
+- id_usina FK opcional
+- nome
+- email
+- cargo
+- tipo_acesso
+- status
+
+Status:
+- Pendente
+- Ativo
+- Inativo
+
+Regras:
+- Funcionario pertence a uma empresa ou a uma usina, nunca aos dois ao mesmo tempo.
+- Todo funcionario novo inicia como Pendente.
+- Ao aceitar convite, vira Ativo.
+- Ao excluir pela primeira vez, vira Inativo.
+- Se ja estiver Inativo e for excluido novamente, pode ser deletado definitivamente.
+
+6. CONVITE_FUNCIONARIO
+Campos:
+- id_convite PK
+- id_funcionario FK
+- token UNIQUE
+- status
+- data_criacao
+- data_aceite
+- data_expiracao
+
+Relacionamentos:
+- Funcionario 1:1 ou 1:N ConviteFuncionario, dependendo se o historico de convites sera mantido.
+
+7. ENDERECO
+Campos:
+- id_endereco PK
+- id_empresa FK opcional
+- id_usina FK opcional
+- id_pessoa_fisica FK opcional
+- cep
+- rua
+- numero
+- complemento
+- bairro
+- cidade
+- estado
+- pais
+- tipo_endereco
+
+Observacao:
+- O MER da imagem possui endereco_empresa. Para atender todo o site, o ideal e trocar por Endereco generico, pois usina tambem possui endereco.
+
+8. PECA
+Campos:
+- id_peca PK
+- id_empresa FK opcional
+- nome
+- tipo
+- categoria
+- descricao
+- material
+- peso
+- unidade_medida
+- desenho_tecnico_url
+- status
+
+Relacionamentos:
+- Peca pode ser usada em Pedido.
+- Peca pode ser usada como base para ItemPedido.
+
+9. PECA_COMERCIAL
+Campos:
+- id_peca_comercial PK
+- id_usina FK opcional
+- nome
+- material
+- estoque
+- prazo_entrega
+- valor_unitario
+- fornecedor_nome
+- status
+
+Relacionamentos:
+- Usina 1:N PecasComerciais.
+- PecaComercial pode gerar uma solicitacao comercial ou pedido de compra.
+
+Uso no site:
+- Dashboard pessoa juridica exibe pecas prontas, como flange, engrenagem, bucha e eixo retificado.
+
+10. PEDIDO
+Campos:
+- id_pedido PK
+- id_empresa_compradora FK
+- numero_pedido
+- urgencia
+- status
+- observacoes
+- prazo_entrega_dias
+- data_pedido
+- data_prevista_entrega
+- data_entrega_real
+- valor_total
+
+Relacionamentos:
+- Empresa 1:N Pedido.
+- Pedido 1:N ItemPedido.
+- Pedido 1:N Proposta.
+- Pedido 1:N HistoricoStatusPedido.
+
+11. ITEM_PEDIDO
+Campos:
+- id_item PK
+- id_pedido FK
+- id_peca FK
+- quantidade
+- valor_unitario
+- valor_total
+- observacao
+
+Relacionamentos:
+- Pedido 1:N ItemPedido.
+- Peca 1:N ItemPedido.
+
+12. SOLICITACAO
+Campos:
+- id_solicitacao PK
+- id_empresa FK
+- id_pedido FK opcional
+- titulo
+- descricao
+- categoria
+- status
+- prazo_desejado
+- arquivo_tecnico_url
+- data_criacao
+
+Relacionamentos:
+- Empresa 1:N Solicitacao.
+- Solicitacao pode gerar Pedido.
+- Solicitacao pode receber Propostas.
+
+13. PROPOSTA
+Campos:
+- id_proposta PK
+- id_pedido FK
+- id_usina FK
+- id_empresa FK
+- valor
+- prazo_fabricacao
+- frete
+- observacao
+- status
+- data_envio
+- data_cancelamento
+- data_resposta
+
+Status:
+- Enviada
+- Em analise
+- Aceita
+- Recusada
+- Cancelada
+
+Relacionamentos:
+- Pedido 1:N Proposta.
+- Usina 1:N Proposta.
+- Empresa 1:N Proposta recebida por meio de seus pedidos.
+
+Regras:
+- Proposta cancelada nao aparece nas listagens principais.
+- Proposta cancelada pode permanecer no banco para historico.
+- Ao aceitar uma proposta, pode bloquear aceite de outras propostas do mesmo pedido, se essa regra for ativada.
+
+14. HISTORICO_STATUS_PEDIDO
+Campos:
+- id_historico PK
+- id_pedido FK
+- status_anterior
+- status_novo
+- observacao
+- data_alteracao
+
+Relacionamentos:
+- Pedido 1:N HistoricoStatusPedido.
+
+15. AVALIACAO_ENTREGA
+Campos:
+- id_avaliacao PK
+- id_pedido FK
+- id_empresa_avaliadora FK
+- id_usina_avaliada FK
+- nota_qualidade
+- nota_prazo
+- nota_atendimento
+- comentario
+- data_avaliacao
+
+Relacionamentos:
+- Pedido 1:1 AvaliacaoEntrega.
+- Empresa 1:N Avaliacoes realizadas.
+- Usina 1:N Avaliacoes recebidas.
+
+16. BLOQUEIO_USINA
+Campos:
+- id_bloqueio PK
+- id_usina FK
+- motivo
+- tipo_bloqueio
+- data_inicio
+- data_fim
+- ativo
+
+Relacionamentos:
+- Usina 1:N BloqueioUsina.
+
+RELACIONAMENTOS PRINCIPAIS
+- Usuario 1:1 Empresa
+- Usuario 1:1 Usina
+- Usuario 1:1 PessoaFisica
+- Usuario 1:1 Funcionario
+- Empresa 1:N Funcionarios
+- Usina 1:N Funcionarios
+- Funcionario 1:N ConvitesFuncionario
+- Empresa 1:N Pedidos
+- Pedido 1:N ItensPedido
+- Pedido 1:N Propostas
+- Usina 1:N Propostas
+- Empresa 1:N Propostas recebidas
+- Empresa/Usina/PessoaFisica 1:N Enderecos
+- Usina 1:N PecasComerciais
+
+CONCLUSAO
+O MER da imagem e uma boa base para empresa, usina, pedido, item, peca, avaliacao e historico. Para atender todo o site, ele precisa incluir Usuario mais flexivel, PessoaFisica, Funcionario, ConviteFuncionario, Proposta, Solicitacao, Endereco generico e PecaComercial.

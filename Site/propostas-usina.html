@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Propostas Enviadas | Usinalink</title>
+  <title>Propostas Usina | Usinalink</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="orange-mode" data-user-role="usina">
@@ -15,7 +15,7 @@
         <a href="perfil-usina.html">Perfil</a>
         <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
         <a href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
-        <a class="active" href="propostas-enviadas.html">Propostas enviadas</a>
+        <a class="active" href="propostas-usina.html">Propostas enviadas</a>
         <a href="index.html">Sair</a>
       </nav>
     </aside>
@@ -27,8 +27,8 @@
           <table>
             <thead><tr><th>Pe&ccedil;a</th><th>Cliente</th><th>Valor</th><th>Prazo</th><th>Status</th><th>Data de envio</th><th>A&ccedil;&otilde;es</th></tr></thead>
             <tbody>
-              <tr data-search-row><td>Eixo estriado</td><td>Metal Forte</td><td>R$ 18.500,00</td><td>18 dias</td><td><span class="badge info">Enviada</span></td><td>26/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
-              <tr data-search-row><td>Base fundida</td><td>Energia Sul</td><td>R$ 42.000,00</td><td>30 dias</td><td><span class="badge warning">Em an&aacute;lise</span></td><td>24/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
+              <tr data-search-row data-proposal-id="proposta-1"><td>Eixo estriado</td><td>Metal Forte</td><td>R$ 18.500,00</td><td>18 dias</td><td><span class="badge info">Enviada</span></td><td>26/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
+              <tr data-search-row data-proposal-id="proposta-2"><td>Base fundida</td><td>Energia Sul</td><td>R$ 42.000,00</td><td>30 dias</td><td><span class="badge warning">Em an&aacute;lise</span></td><td>24/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
               <tr data-search-row><td>Polia industrial</td><td>Minas Parts</td><td>R$ 9.800,00</td><td>15 dias</td><td><span class="badge success">Aceita</span></td><td>20/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
               <tr data-search-row><td>Suporte inox</td><td>ValeTech</td><td>R$ 12.400,00</td><td>22 dias</td><td><span class="badge muted">Recusada</span></td><td>18/05/2026</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>
             </tbody>

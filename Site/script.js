@@ -12,31 +12,153 @@ const signupConfig = {
   empresa: {
     labels: ["Nome da empresa", "CNPJ", "E-mail corporativo", "Nome do responsavel", "Cargo", "Senha"],
     placeholders: ["Metal Forte Ltda.", "00.000.000/0001-00", "compras@empresa.com", "Nome e sobrenome", "Gerente de compras", "Crie uma senha"],
-    icons: ["EMP", "#", "@", "N", "ID", "*"],
+    icons: ["N", "#", "@", "R", "C", "*"],
     types: ["text", "text", "email", "text", "text", "password"],
+    keys: ["nome", "cnpj", "email", "responsavel", "cargo", "senha"],
     button: "Cadastrar empresa",
-    redirect: "dashboard-empresa.html",
+    redirect: "login-empresa.html",
     orange: false
   },
   pessoa: {
-    labels: ["Nome completo", "CPF", "E-mail", "Telefone", "Senha"],
-    placeholders: ["Nome e sobrenome", "000.000.000-00", "voce@email.com", "(00) 00000-0000", "Crie uma senha"],
-    icons: ["N", "#", "@", "TEL", "*"],
-    types: ["text", "text", "email", "tel", "password"],
+    labels: ["Nome completo", "CPF", "E-mail", "Telefone", "Senha", "Confirmar senha"],
+    placeholders: ["Nome e sobrenome", "000.000.000-00", "voce@email.com", "(00) 00000-0000", "Crie uma senha", "Digite a senha novamente"],
+    icons: ["N", "#", "@", "T", "*", "*"],
+    types: ["text", "text", "email", "tel", "password", "password"],
+    keys: ["nome", "cpf", "email", "telefone", "senha", "confirmarSenha"],
     button: "Cadastrar pessoa fisica",
-    redirect: "dashboard-empresa.html",
+    redirect: "login.html",
     orange: false
   },
   usina: {
-    labels: ["Nome da usina", "CNPJ", "E-mail industrial", "Respons\u00e1vel t\u00e9cnico", "Especialidade principal", "Senha"],
-    placeholders: ["Atlas Metais", "00.000.000/0001-00", "comercial@usina.com.br", "Nome do responsavel", "Usinagem de precisao", "Crie uma senha"],
-    icons: ["USI", "#", "@", "N", "ESP", "*"],
-    types: ["text", "text", "email", "text", "text", "password"],
+    labels: ["Nome da usina", "CNPJ", "E-mail industrial", "Respons\u00e1vel t\u00e9cnico", "Especialidade principal", "Senha", "Confirmar senha"],
+    placeholders: ["Atlas Metais", "00.000.000/0001-00", "contato@atlasmetais.com", "Nome do responsavel", "Usinagem de precisao", "Crie uma senha", "Digite a senha novamente"],
+    icons: ["N", "#", "@", "R", "E", "*", "*"],
+    types: ["text", "text", "email", "text", "text", "password", "password"],
+    keys: ["nome", "cnpj", "email", "responsavel", "especialidade", "senha", "confirmarSenha"],
     button: "Cadastrar usina",
-    redirect: "dashboard-usina.html",
+    redirect: "login-usina.html",
     orange: true
   }
 };
+
+const signupStorageKey = "usinalinkAccounts";
+
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function maskCpf(value) {
+  return onlyDigits(value).slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
+function maskCnpj(value) {
+  return onlyDigits(value).slice(0, 14).replace(/(\d{2})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1/$2").replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+}
+
+function maskPhone(value) {
+  return onlyDigits(value).slice(0, 11).replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+}
+
+function maskCep(value) {
+  return onlyDigits(value).slice(0, 8).replace(/(\d{5})(\d{1,3})$/, "$1-$2");
+}
+
+function applyMaskByKey(input) {
+  if (!input) return;
+  const key = input.dataset.fieldKey || input.dataset.mask;
+  if (key === "cpf") input.value = maskCpf(input.value);
+  if (key === "cnpj") input.value = maskCnpj(input.value);
+  if (key === "telefone") input.value = maskPhone(input.value);
+  if (key === "cep") input.value = maskCep(input.value);
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || "").trim());
+}
+
+function isValidCpf(value) {
+  const cpf = onlyDigits(value);
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  let sum = 0;
+  for (let index = 0; index < 9; index += 1) sum += Number(cpf[index]) * (10 - index);
+  let digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+  if (digit !== Number(cpf[9])) return false;
+  sum = 0;
+  for (let index = 0; index < 10; index += 1) sum += Number(cpf[index]) * (11 - index);
+  digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+  return digit === Number(cpf[10]);
+}
+
+function isValidCnpj(value) {
+  const cnpj = onlyDigits(value);
+  return cnpj.length === 14;
+}
+
+function getStoredAccounts() {
+  try {
+    const accounts = JSON.parse(localStorage.getItem(signupStorageKey) || "[]");
+    return Array.isArray(accounts) ? accounts : [];
+  } catch {
+    return [];
+  }
+}
+
+function setFieldState(input, message) {
+  const field = input?.closest(".field");
+  if (!field) return;
+  let messageElement = field.querySelector(".field-message");
+  if (!messageElement) {
+    messageElement = document.createElement("small");
+    messageElement.className = "field-message";
+    field.appendChild(messageElement);
+  }
+  field.classList.toggle("has-error", Boolean(message));
+  field.classList.toggle("has-success", !message && Boolean(input.value.trim()));
+  input.setAttribute("aria-invalid", message ? "true" : "false");
+  messageElement.textContent = message || "";
+}
+
+function validateSignupInput(input, accounts) {
+  const key = input.dataset.fieldKey;
+  const value = input.value.trim();
+  if (!input.required || input.closest(".field")?.hidden) return "";
+  if (!value) return "Este campo e obrigatorio.";
+  if (key === "email") {
+    const normalized = value.toLowerCase();
+    if (!isValidEmail(value)) return "Informe um e-mail valido.";
+    if (accounts.some((account) => account.email === normalized)) return "Este e-mail ja esta cadastrado.";
+  }
+  if (key === "senha" && value.length < 6) return "A senha deve ter no minimo 6 caracteres.";
+  if (key === "confirmarSenha") {
+    const password = input.form?.querySelector('[data-field-key="senha"]')?.value || "";
+    if (value !== password) return "Senha e confirmar senha precisam ser iguais.";
+  }
+  if (key === "cpf") {
+    const cpf = onlyDigits(value);
+    if (!isValidCpf(value)) return "Informe um CPF valido no formato 000.000.000-00.";
+    if (accounts.some((account) => account.cpf === cpf)) return "Este CPF ja esta cadastrado.";
+  }
+  if (key === "cnpj") {
+    const cnpj = onlyDigits(value);
+    if (!isValidCnpj(value)) return "Informe um CNPJ valido no formato 00.000.000/0000-00.";
+    if (accounts.some((account) => account.cnpj === cnpj)) return "Este CNPJ ja esta cadastrado.";
+  }
+  return "";
+}
+
+function collectSignupPayload(form, type) {
+  const payload = { type };
+  form.querySelectorAll("input[data-field-key]").forEach((input) => {
+    if (input.closest(".field")?.hidden) return;
+    const key = input.dataset.fieldKey;
+    payload[key] = key === "email" ? input.value.trim().toLowerCase() : input.value.trim();
+    if (key === "cpf" || key === "cnpj" || key === "telefone") payload[key] = onlyDigits(input.value);
+  });
+  payload.createdAt = new Date().toISOString();
+  return payload;
+}
 
 function updateSignupForm(type) {
   const config = signupConfig[type];
@@ -44,7 +166,7 @@ function updateSignupForm(type) {
   const button = document.querySelector("#signup-submit");
   if (!config || !form || !button) return;
 
-  for (let index = 0; index < 6; index += 1) {
+  for (let index = 0; index < 7; index += 1) {
     const label = document.querySelector(`#field-label-${index + 1}`);
     const input = document.querySelector(`#signup-field-${index + 1}`);
     const symbol = input?.closest(".input-wrap")?.querySelector(".input-symbol");
@@ -62,6 +184,9 @@ function updateSignupForm(type) {
     input.placeholder = config.placeholders[index];
     input.value = "";
     input.required = true;
+    input.dataset.fieldKey = config.keys[index];
+    input.autocomplete = config.keys[index] === "senha" ? "new-password" : "on";
+    setFieldState(input, "");
     if (symbol) symbol.textContent = config.icons[index];
   }
 
@@ -69,6 +194,19 @@ function updateSignupForm(type) {
   button.classList.toggle("btn-orange", config.orange);
   button.classList.toggle("btn-primary", !config.orange);
   form.dataset.redirect = config.redirect;
+  form.dataset.accountType = type;
+  const loginLink = document.querySelector("#signup-login-link");
+  if (loginLink) {
+    loginLink.href = type === "usina" ? "login-usina.html" : type === "empresa" ? "login-empresa.html" : "login.html";
+  }
+}
+
+function getSignupTypeFromUrl() {
+  const raw = new URLSearchParams(window.location.search).get("tipo");
+  if (!raw) return "";
+  if (raw === "pessoa_fisica" || raw === "pessoa-fisica") return "pessoa";
+  if (raw === "empresa" || raw === "usina") return raw;
+  return "";
 }
 
 document.querySelectorAll(".choice-card").forEach((card) => {
@@ -85,8 +223,163 @@ document.querySelectorAll(".choice-card").forEach((card) => {
   });
 });
 
+document.querySelectorAll('a[href="index.html"]').forEach((link) => {
+  if (link.textContent.trim().toLowerCase() === "sair") {
+    link.addEventListener("click", () => {
+      sessionStorage.removeItem("usinalinkSession");
+      localStorage.removeItem("usinalinkSession");
+    });
+  }
+});
+
 const checkedSignupType = document.querySelector('.choice-card input[type="radio"]:checked');
-if (checkedSignupType) updateSignupForm(checkedSignupType.value);
+const urlSignupType = getSignupTypeFromUrl();
+if (urlSignupType) {
+  const targetRadio = document.querySelector(`.choice-card input[value="${urlSignupType}"]`);
+  const targetCard = targetRadio?.closest(".choice-card");
+  if (targetRadio && targetCard) {
+    document.querySelectorAll(".choice-card").forEach((item) => item.classList.remove("active"));
+    document.querySelectorAll('.choice-card input[type="radio"]').forEach((item) => { item.checked = false; });
+    targetRadio.checked = true;
+    targetCard.classList.add("active");
+    updateSignupForm(urlSignupType);
+  }
+} else if (checkedSignupType) updateSignupForm(checkedSignupType.value);
+
+document.querySelectorAll(".signup-dynamic-form input").forEach((input) => {
+  input.addEventListener("input", () => {
+    applyMaskByKey(input);
+    setFieldState(input, validateSignupInput(input, getStoredAccounts()));
+  });
+  input.addEventListener("blur", () => setFieldState(input, validateSignupInput(input, getStoredAccounts())));
+});
+
+const signupForm = document.querySelector(".signup-dynamic-form");
+if (signupForm) {
+  let signupLookupTimer;
+  const lookupSignupOrganization = async () => {
+    const type = signupForm.dataset.accountType;
+    if (!["empresa", "usina"].includes(type) || !window.UsinaLinkApi) return;
+    const nameInput = signupForm.querySelector('[data-field-key="nome"]');
+    const name = nameInput?.value.trim();
+    if (!name || name.length < 3) return;
+    const path = type === "usina" ? `/api/usinas/buscar?nome=${encodeURIComponent(name)}` : `/api/empresas/buscar?nome=${encodeURIComponent(name)}`;
+    try {
+      const data = await window.UsinaLinkApi.get(path);
+      const fieldMap = {
+        cnpj: data.cnpj,
+        email: data.email,
+        responsavel: data.responsavel,
+        cargo: type === "empresa" ? data.cargo : data.especialidade,
+        especialidade: data.especialidade,
+        telefone: data.telefone
+      };
+      Object.entries(fieldMap).forEach(([key, value]) => {
+        const input = signupForm.querySelector(`[data-field-key="${key}"]`);
+        if (input && value) {
+          input.value = value;
+          applyMaskByKey(input);
+          setFieldState(input, "");
+        }
+      });
+      showToast(`${type === "usina" ? "Usina" : "Empresa"} encontrada. Dados preenchidos automaticamente.`);
+    } catch (error) {
+      showToast(type === "usina" ? "Usina nao encontrada. Preencha os dados manualmente." : "Empresa nao encontrada. Preencha os dados manualmente.");
+    }
+  };
+
+  signupForm.addEventListener("input", (event) => {
+    const input = event.target.closest('[data-field-key="nome"]');
+    if (!input) return;
+    window.clearTimeout(signupLookupTimer);
+    signupLookupTimer = window.setTimeout(lookupSignupOrganization, 600);
+  });
+
+  signupForm.addEventListener("blur", (event) => {
+    if (event.target.matches('[data-field-key="nome"]')) lookupSignupOrganization();
+  }, true);
+
+  signupForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const accounts = getStoredAccounts();
+    const inputs = [...signupForm.querySelectorAll("input[data-field-key]")].filter((input) => !input.closest(".field")?.hidden);
+    const errors = inputs.map((input) => {
+      applyMaskByKey(input);
+      const error = validateSignupInput(input, accounts);
+      setFieldState(input, error);
+      return error;
+    }).filter(Boolean);
+
+    if (errors.length) {
+      showToast("Revise os campos destacados antes de continuar");
+      inputs.find((input) => input.getAttribute("aria-invalid") === "true")?.focus();
+      return;
+    }
+
+    const type = signupForm.dataset.accountType || document.querySelector('.choice-card input[type="radio"]:checked')?.value || "empresa";
+    const payload = collectSignupPayload(signupForm, type);
+    const apiType = type === "pessoa" ? "pessoa_fisica" : type;
+    payload.tipo = apiType;
+    const finishSignup = (user) => {
+      localStorage.setItem(signupStorageKey, JSON.stringify([...accounts, payload]));
+      showToast("Cadastro realizado com sucesso");
+      window.setTimeout(() => { window.location.href = signupForm.dataset.redirect; }, 800);
+    };
+
+    if (!window.UsinaLinkApi) {
+      showToast("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
+      return;
+    }
+
+    window.UsinaLinkApi.post(`/api/cadastro/${apiType}`, payload)
+      .then((result) => finishSignup(result.user))
+      .catch((error) => showToast(error.message));
+  });
+}
+
+document.querySelectorAll(".js-login-form").forEach((form) => {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const emailInput = form.querySelector('input[name="email"], input[id$="-email"]');
+    const passwordInput = form.querySelector('input[name="senha"], input[id$="-senha"]');
+    const tipo = form.dataset.loginType || "empresa";
+    const redirect = form.dataset.redirect || "index.html";
+    const fields = [emailInput, passwordInput];
+    let hasError = false;
+
+    fields.forEach((input) => setFieldState(input, ""));
+    if (!emailInput.value.trim()) {
+      setFieldState(emailInput, "Informe o e-mail.");
+      hasError = true;
+    } else if (!isValidEmail(emailInput.value)) {
+      setFieldState(emailInput, "Informe um e-mail valido.");
+      hasError = true;
+    }
+    if (!passwordInput.value.trim()) {
+      setFieldState(passwordInput, "Informe a senha.");
+      hasError = true;
+    } else if (passwordInput.value.length < 6) {
+      setFieldState(passwordInput, "A senha deve ter no minimo 6 caracteres.");
+      hasError = true;
+    }
+    if (hasError) return;
+
+    try {
+      if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
+      const result = await window.UsinaLinkApi.post("/api/auth/login", {
+        email: emailInput.value,
+        senha: passwordInput.value,
+        tipo
+      });
+      sessionStorage.setItem("usinalinkSession", JSON.stringify(result.user));
+      showToast("Login realizado com sucesso");
+      window.setTimeout(() => { window.location.href = redirect; }, 500);
+    } catch (error) {
+      setFieldState(emailInput, error.message);
+      showToast(error.message);
+    }
+  });
+});
 
 const profileData = {
   empresa: {
@@ -130,12 +423,22 @@ function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
 }
 
+function inferMaskKey(label, type) {
+  const normalized = String(label || "").toLowerCase();
+  if (normalized.includes("cpf")) return "cpf";
+  if (normalized.includes("cnpj")) return "cnpj";
+  if (normalized.includes("cep")) return "cep";
+  if (type === "tel" || normalized.includes("telefone") || normalized.includes("whatsapp")) return "telefone";
+  return "";
+}
+
 function fieldMarkup(field) {
   const [label, type, value, options] = field;
   if (type === "textarea") return `<label class="field span-2"><span>${label}</span><textarea rows="6">${escapeHtml(value)}</textarea></label>`;
   if (type === "select") return `<label class="field"><span>${label}</span><div class="input-wrap select-field"><span class="input-symbol">v</span><select>${options.map((option) => `<option${option === value ? " selected" : ""}>${escapeHtml(option)}</option>`).join("")}</select></div></label>`;
   if (type === "checkbox") return `<label class="toggle-field span-2"><input type="checkbox" checked><span></span><strong>${label || value}</strong></label>`;
-  return `<label class="field"><span>${label}</span><div class="input-wrap"><span class="input-symbol">${type === "password" ? "*" : "T"}</span><input type="${type}" value="${escapeHtml(value)}"></div></label>`;
+  const maskKey = inferMaskKey(label, type);
+  return `<label class="field"><span>${label}</span><div class="input-wrap"><span class="input-symbol">${type === "password" ? "*" : "T"}</span><input type="${type}" value="${escapeHtml(value)}"${maskKey ? ` data-mask="${maskKey}"` : ""}></div></label>`;
 }
 
 function renderProfileSection(sectionKey) {
@@ -165,6 +468,7 @@ document.querySelectorAll("[data-profile-section]").forEach((item) => {
 });
 
 document.querySelectorAll(".js-demo-form").forEach((form) => {
+  if (form.classList.contains("signup-dynamic-form")) return;
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const submitter = event.submitter;
@@ -175,9 +479,398 @@ document.querySelectorAll(".js-demo-form").forEach((form) => {
   });
 });
 
+function ensureActionModal() {
+  let modal = document.querySelector("#action-modal");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.className = "modal-backdrop";
+  modal.id = "action-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <section class="card modal-card action-modal-card" role="dialog" aria-modal="true" aria-labelledby="action-modal-title">
+      <div class="modal-header">
+        <div><span class="eyebrow" id="action-modal-kicker">Detalhes</span><h2 id="action-modal-title">Detalhes</h2></div>
+        <button class="modal-close js-action-modal-close" type="button" aria-label="Fechar">x</button>
+      </div>
+      <div id="action-modal-body"></div>
+    </section>`;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".js-action-modal-close")) modal.hidden = true;
+  });
+  return modal;
+}
+
+function openActionModal({ title, kicker = "Detalhes", body }) {
+  const modal = ensureActionModal();
+  modal.querySelector("#action-modal-kicker").textContent = kicker;
+  modal.querySelector("#action-modal-title").textContent = title;
+  modal.querySelector("#action-modal-body").innerHTML = body;
+  modal.hidden = false;
+}
+
+function rowCells(row) {
+  return [...row.querySelectorAll("td")].map((cell) => cell.textContent.trim());
+}
+
+function badgeClass(status) {
+  if (/aceita|ativo/i.test(status)) return "success";
+  if (/analise|pendente|alta/i.test(status)) return "warning";
+  if (/cancelada|recusada|inativo/i.test(status)) return "muted";
+  return "info";
+}
+
+function setRowStatus(row, status) {
+  const badge = row.querySelector(".badge");
+  if (!badge) return;
+  badge.className = `badge ${badgeClass(status)}`;
+  badge.textContent = status;
+  renderEmployeeRowActions(row);
+}
+
+function employeeStatus(row) {
+  return row?.querySelector(".badge")?.textContent.trim() || "";
+}
+
+function renderEmployeeRowActions(row) {
+  if (!row?.closest("[data-employee-table]")) return;
+  const actionsCell = row.children[row.children.length - 1];
+  const status = employeeStatus(row);
+  const invite = status === "Pendente" ? '<button class="table-action js-alert" type="button">Reenviar convite</button>' : "";
+  const activate = status === "Inativo" ? '<button class="table-action js-alert" type="button">Ativar</button>' : "";
+  const removeText = status === "Inativo" ? "Excluir definitivamente" : "Excluir";
+  actionsCell.innerHTML = `<button class="table-action js-alert" type="button">Editar</button>${invite}${activate}<button class="table-action js-alert" type="button">${removeText}</button>`;
+}
+
+function employeeRowMarkup(item) {
+  const status = item.status || "Pendente";
+  return `<tr data-search-row data-employee-id="${escapeHtml(item.id || "")}"><td>${escapeHtml(item.nome || "")}</td><td>${escapeHtml(item.email || "")}</td><td>${escapeHtml(item.cargo || "")}</td><td>${escapeHtml(item.tipo || "")}</td><td><span class="badge ${statusClass(status)}">${escapeHtml(status)}</span></td><td></td></tr>`;
+}
+
+async function loadEmployeesFromApi() {
+  if (!window.UsinaLinkApi) return;
+  document.querySelectorAll("[data-employee-table]").forEach(async (table) => {
+    try {
+      const context = table.dataset.employeeTable;
+      const employees = await window.UsinaLinkApi.get(`/api/funcionarios?contexto=${encodeURIComponent(context)}`);
+      table.innerHTML = employees.map(employeeRowMarkup).join("");
+      table.querySelectorAll("tr").forEach(renderEmployeeRowActions);
+    } catch {
+      table.querySelectorAll("tr").forEach(renderEmployeeRowActions);
+    }
+  });
+}
+
+function proposalDetailFromCard(card) {
+  const facts = [...card.querySelectorAll("dl div")].reduce((acc, item) => {
+    acc[item.querySelector("dt")?.textContent.trim()] = item.querySelector("dd")?.textContent.trim();
+    return acc;
+  }, {});
+  return {
+    usina: card.querySelector("h2")?.textContent.trim(),
+    valor: card.querySelector(".price")?.textContent.trim(),
+    prazo: facts["Prazo de fabricacao"] || facts["Prazo de fabricação"] || "18 dias",
+    frete: facts.Frete || "R$ 950,00",
+    avaliacao: facts["Avaliacao"] || facts["Avaliação"] || "4,8/5",
+    observacao: card.querySelector("p")?.textContent.trim(),
+    peca: "Eixo estriado",
+    material: "Aco 4140 temperado",
+    quantidade: "60 unidades",
+    regiao: "Sudeste"
+  };
+}
+
+function renderProposalDetails(data, includeDecision = false) {
+  return `
+    <div class="proposal-detail-head">
+      <div><span>Usina</span><strong>${escapeHtml(data.usina || data[1] || "Usina")}</strong></div>
+      <strong class="modal-price">${escapeHtml(data.valor || data[2] || "R$ 0,00")}</strong>
+    </div>
+    <div class="action-modal-grid">
+      <div><span>Prazo de fabricacao</span><strong>${escapeHtml(data.prazo || data[3] || "18 dias")}</strong></div>
+      <div><span>Frete</span><strong>${escapeHtml(data.frete || "R$ 950,00")}</strong></div>
+      <div><span>Avaliacao</span><strong>${escapeHtml(data.avaliacao || "4,8/5")}</strong></div>
+      <div><span>Regiao</span><strong>${escapeHtml(data.regiao || "Sudeste")}</strong></div>
+      <div><span>Peca/Pedido</span><strong>${escapeHtml(data.peca || data[0] || "Peca industrial")}</strong></div>
+      <div><span>Material</span><strong>${escapeHtml(data.material || "Aco carbono")}</strong></div>
+      <div><span>Quantidade</span><strong>${escapeHtml(data.quantidade || "60 unidades")}</strong></div>
+      <div><span>Arquivo tecnico</span><strong>${escapeHtml(data.arquivo || "arquivo-tecnico.pdf")}</strong></div>
+    </div>
+    <div class="detail-list"><div><span>Observacoes</span><strong>${escapeHtml(data.observacao || "Proposta com condicoes comerciais completas.")}</strong></div></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost js-action-modal-close" type="button">Fechar</button>
+      ${includeDecision ? '<button class="btn js-modal-accept-proposal" type="button">Aceitar proposta</button><button class="btn btn-ghost js-modal-reject-proposal" type="button">Recusar proposta</button>' : ""}
+    </div>`;
+}
+
+function currentSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem("usinalinkSession") || localStorage.getItem("usinalinkSession") || "null") || {};
+  } catch {
+    return {};
+  }
+}
+
+function applySessionContext() {
+  const session = currentSession();
+  if (!session?.tipo) return;
+  const role = document.body?.dataset.userRole || document.body?.dataset.profileKind;
+  if (!role || session.tipo !== role) return;
+
+  const displayName = session.nome || (role === "usina" ? "Minha usina" : "Minha empresa");
+  const headerTitle = document.querySelector(".app-header h1");
+  if (headerTitle) headerTitle.textContent = displayName;
+
+  const userName = document.querySelector(".user-strip strong");
+  if (userName) userName.textContent = displayName;
+
+  const userRole = document.querySelector(".user-strip span");
+  if (userRole) userRole.textContent = role === "usina" ? "Conta da usina" : "Conta da empresa";
+
+  const profileTitle = document.querySelector(".profile-head h1");
+  if (profileTitle) profileTitle.textContent = displayName;
+
+  const profileSubtitle = document.querySelector(".profile-head p");
+  if (profileSubtitle) profileSubtitle.textContent = role === "usina" ? "Perfil industrial da usina logada." : "Perfil comercial da empresa logada.";
+}
+
+function proposalRowMarkup(item) {
+  return `<tr data-search-row data-proposal-id="${escapeHtml(item.id)}"><td>${escapeHtml(item.peca || "")}</td><td>${escapeHtml(item.cliente || "")}</td><td>${escapeHtml(item.valor || "")}</td><td>${escapeHtml(item.prazo || "")}</td><td><span class="badge ${badgeClass(item.status || "Enviada")}">${escapeHtml(item.status || "Enviada")}</span></td><td>${escapeHtml(item.dataEnvio || "")}</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>`;
+}
+
+function proposalCardMarkup(item, best) {
+  return `<article class="card proposal-card ${best ? "best" : ""}" data-search-row data-proposal-id="${escapeHtml(item.id)}">
+    ${best ? '<span class="best-label">Melhor proposta</span>' : ""}
+    <h2>${escapeHtml(item.usina || "Usina")}</h2>
+    <strong class="price">${escapeHtml(item.valor || "")}</strong>
+    <dl><div><dt>Prazo de fabricacao</dt><dd>${escapeHtml(item.prazo || "")}</dd></div><div><dt>Frete</dt><dd>${escapeHtml(item.frete || "")}</dd></div><div><dt>Avaliacao</dt><dd>${escapeHtml(item.avaliacao || "4,9/5")}</dd></div></dl>
+    <p>${escapeHtml(item.observacao || "")}</p>
+    <div class="card-actions"><button class="btn btn-ghost js-alert" type="button">Ver detalhes</button><button class="btn js-alert" type="button">Aceitar proposta</button></div>
+  </article>`;
+}
+
+async function loadProposalsFromApi() {
+  if (!window.UsinaLinkApi) return;
+  const session = currentSession();
+  const usinaTable = document.querySelector("body[data-user-role='usina'] tbody");
+  if (document.body.dataset.userRole === "usina" && usinaTable && window.location.pathname.includes("propostas-usina")) {
+    try {
+      const proposals = await window.UsinaLinkApi.get(`/api/propostas/usina/${encodeURIComponent(session.usinaId || "")}`);
+      usinaTable.innerHTML = proposals.map(proposalRowMarkup).join("") || '<tr><td colspan="7">Nenhuma proposta enviada.</td></tr>';
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+  const empresaGrid = document.querySelector("body[data-user-role='empresa'] .proposal-grid");
+  if (empresaGrid && window.location.pathname.includes("propostas")) {
+    try {
+      const proposals = await window.UsinaLinkApi.get(`/api/propostas/empresa/${encodeURIComponent(session.empresaId || "")}`);
+      empresaGrid.innerHTML = proposals.map((item, index) => proposalCardMarkup(item, index === 0)).join("") || '<article class="card proposal-card"><h2>Nenhuma proposta recebida</h2><p>As propostas enviadas pelas usinas aparecerao aqui.</p></article>';
+    } catch (error) {
+      showToast(error.message);
+    }
+  }
+}
+
+function openEmployeeEdit(row) {
+  const cells = rowCells(row);
+  openActionModal({
+    title: "Editar funcionario",
+    kicker: "Equipe",
+    body: `
+      <form class="form-grid js-inline-employee-edit">
+        <label class="field"><span>Nome</span><div class="input-wrap"><span class="input-symbol">N</span><input name="name" value="${escapeHtml(cells[0])}"></div></label>
+        <label class="field"><span>E-mail</span><div class="input-wrap"><span class="input-symbol">@</span><input name="email" type="email" value="${escapeHtml(cells[1])}"></div></label>
+        <label class="field"><span>Cargo</span><div class="input-wrap"><span class="input-symbol">C</span><input name="role" value="${escapeHtml(cells[2])}"></div></label>
+        <div class="form-actions span-2"><button class="btn btn-ghost js-action-modal-close" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar</button></div>
+      </form>`
+  });
+  const form = document.querySelector(".js-inline-employee-edit");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    row.children[0].textContent = data.get("name");
+    row.children[1].textContent = data.get("email");
+    row.children[2].textContent = data.get("role");
+    const finish = () => {
+      ensureActionModal().hidden = true;
+      showToast("Funcionario atualizado com sucesso");
+    };
+    if (window.UsinaLinkApi && row.dataset.employeeId) {
+      window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}`, {
+        nome: data.get("name"),
+        email: data.get("email"),
+        cargo: data.get("role")
+      }).then(finish).catch((error) => showToast(error.message));
+    } else {
+      finish();
+    }
+  });
+}
+
+function openProposalEdit(row) {
+  const cells = rowCells(row);
+  openActionModal({
+    title: "Editar proposta",
+    kicker: "Comercial",
+    body: `
+      <form class="form-grid js-inline-proposal-edit">
+        <label class="field"><span>Valor</span><div class="input-wrap"><span class="input-symbol">R$</span><input name="valor" value="${escapeHtml(cells[2])}"></div></label>
+        <label class="field"><span>Prazo</span><div class="input-wrap"><span class="input-symbol">P</span><input name="prazo" value="${escapeHtml(cells[3])}"></div></label>
+        <label class="field"><span>Frete</span><div class="input-wrap"><span class="input-symbol">F</span><input name="frete" value="R$ 950,00"></div></label>
+        <label class="field"><span>Observacao</span><div class="input-wrap"><span class="input-symbol">O</span><input name="observacao" value="Proposta com inspecao dimensional."></div></label>
+        <div class="form-actions span-2"><button class="btn btn-ghost js-action-modal-close" type="button">Cancelar</button><button class="btn btn-orange" type="submit">Salvar proposta</button></div>
+      </form>`
+  });
+  document.querySelector(".js-inline-proposal-edit").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    row.children[2].textContent = data.get("valor");
+    row.children[3].textContent = data.get("prazo");
+    ensureActionModal().hidden = true;
+    showToast("Proposta atualizada com sucesso");
+  });
+}
+
+function openSimpleConfirm({ title, message, confirmText, onConfirm, orange = false }) {
+  openActionModal({
+    title,
+    kicker: "Confirmacao",
+    body: `<p class="modal-copy">${escapeHtml(message)}</p><div class="form-actions"><button class="btn btn-ghost js-action-modal-close" type="button">Voltar</button><button class="btn ${orange ? "btn-orange" : "btn-primary"} js-modal-confirm" type="button">${escapeHtml(confirmText)}</button></div>`
+  });
+  document.querySelector(".js-modal-confirm").addEventListener("click", () => {
+    onConfirm();
+    ensureActionModal().hidden = true;
+  });
+}
+
 document.addEventListener("click", (event) => {
-  const alertButton = event.target.closest(".js-alert");
-  if (alertButton) showToast(`${alertButton.textContent.trim()} acionado`);
+  if (event.target.closest(".js-modal-accept-proposal")) {
+    ensureActionModal().hidden = true;
+    showToast("Proposta aceita com sucesso");
+    return;
+  }
+  if (event.target.closest(".js-modal-reject-proposal")) {
+    ensureActionModal().hidden = true;
+    showToast("Proposta recusada");
+    return;
+  }
+  const button = event.target.closest(".js-alert");
+  if (!button) return;
+  const action = button.textContent.trim();
+  const row = button.closest("tr");
+  const card = button.closest(".proposal-card");
+  const commercialCard = button.closest(".order-opportunity");
+
+  if (commercialCard && action === "Ver detalhes") {
+    const title = commercialCard.querySelector("h2")?.textContent.trim() || "Peca comercial";
+    const description = commercialCard.querySelector("p")?.textContent.trim() || "";
+    const facts = [...commercialCard.querySelectorAll(".quote-facts div")].map((item) => `<div><span>${escapeHtml(item.querySelector("span")?.textContent || "")}</span><strong>${escapeHtml(item.querySelector("strong")?.textContent || "")}</strong></div>`).join("");
+    openActionModal({
+      title,
+      kicker: "Peca comercial",
+      body: `<div class="detail-list"><div><span>Material</span><strong>${escapeHtml(description)}</strong></div></div><div class="action-modal-grid">${facts}</div><div class="form-actions"><button class="btn btn-ghost js-action-modal-close" type="button">Fechar</button><button class="btn btn-primary js-action-modal-close" type="button">Solicitar compra</button></div>`
+    });
+    return;
+  }
+
+  if (commercialCard && action === "Solicitar compra") {
+    const title = commercialCard.querySelector("h2")?.textContent.trim() || "peca comercial";
+    openSimpleConfirm({
+      title: "Solicitar compra",
+      message: `Deseja registrar interesse de compra para ${title}?`,
+      confirmText: "Confirmar interesse",
+      onConfirm: () => showToast("Solicitacao comercial registrada")
+    });
+    return;
+  }
+
+  if (card && action === "Ver detalhes") {
+    openActionModal({ title: "Detalhes da proposta", kicker: "Proposta recebida", body: renderProposalDetails(proposalDetailFromCard(card), true) });
+    return;
+  }
+  if (card && action === "Aceitar proposta") {
+    openSimpleConfirm({
+      title: "Aceitar proposta",
+      message: "Deseja aceitar esta proposta? As demais propostas deste pedido ficarao bloqueadas visualmente.",
+      confirmText: "Aceitar proposta",
+      onConfirm: () => {
+        document.querySelectorAll(".proposal-card .btn:not(.btn-ghost)").forEach((item) => item.disabled = true);
+        button.textContent = "Proposta aceita";
+        button.disabled = true;
+        card.classList.add("accepted");
+        showToast("Proposta aceita com sucesso");
+      }
+    });
+    return;
+  }
+  if (row && action === "Ver detalhes") {
+    const cells = rowCells(row);
+    openActionModal({ title: "Detalhes da proposta", kicker: "Proposta enviada", body: renderProposalDetails(cells) });
+    return;
+  }
+  if (row && action === "Editar proposta") {
+    openProposalEdit(row);
+    return;
+  }
+  if (row && action === "Cancelar proposta") {
+    openSimpleConfirm({ title: "Cancelar proposta", message: "Confirma o cancelamento desta proposta? Ela sera mantida no historico, mas sumira das listagens principais.", confirmText: "Cancelar proposta", orange: true, onConfirm: () => {
+      const finish = () => {
+        setRowStatus(row, "Cancelada");
+        row.classList.add("is-hidden");
+        showToast("Proposta cancelada");
+      };
+      if (window.UsinaLinkApi && row.dataset.proposalId) window.UsinaLinkApi.put(`/api/propostas/${row.dataset.proposalId}/cancelar`, {}).then(finish).catch((error) => showToast(error.message));
+      else finish();
+    } });
+    return;
+  }
+  if (row && action === "Editar") {
+    openEmployeeEdit(row);
+    return;
+  }
+  if (row && action === "Reenviar convite") {
+    openSimpleConfirm({ title: "Reenviar convite", message: "Enviar um novo convite para este funcionario?", confirmText: "Reenviar convite", onConfirm: () => {
+      if (window.UsinaLinkApi && row.dataset.employeeId) {
+        window.UsinaLinkApi.post(`/api/funcionarios/${row.dataset.employeeId}/reenviar-convite`, {}).then(() => showToast("Convite reenviado com sucesso")).catch((error) => showToast(error.message));
+      } else showToast("Convite reenviado com sucesso");
+    } });
+    return;
+  }
+  if (row && action === "Ativar") {
+    openSimpleConfirm({ title: "Ativar funcionario", message: "Deseja ativar este funcionario novamente?", confirmText: "Ativar", onConfirm: () => {
+      const finish = () => { setRowStatus(row, "Ativo"); showToast("Funcionario ativado com sucesso"); };
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/ativar`, {}).then(finish).catch((error) => showToast(error.message));
+      else finish();
+    } });
+    return;
+  }
+  if (row && action === "Excluir") {
+    openSimpleConfirm({ title: "Inativar funcionario", message: "Este funcionario ficara Inativo. Para remover definitivamente, clique em Excluir definitivamente depois.", confirmText: "Inativar", onConfirm: () => {
+      const finish = () => { setRowStatus(row, "Inativo"); showToast("Funcionario inativado"); };
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
+      else finish();
+    } });
+    return;
+  }
+  if (row && action === "Excluir definitivamente") {
+    openSimpleConfirm({ title: "Excluir definitivamente", message: "Esta acao remove o funcionario da tabela e do banco.", confirmText: "Excluir definitivamente", onConfirm: () => {
+      const finish = () => { row.remove(); showToast("Funcionario excluido definitivamente"); };
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.delete(`/api/funcionarios/${row.dataset.employeeId}`).then(finish).catch((error) => showToast(error.message));
+      else finish();
+    } });
+    return;
+  }
+  if (row && action === "Ver") {
+    const cells = rowCells(row);
+    openActionModal({
+      title: cells[0] || "Detalhes do pedido",
+      kicker: "Solicitacao",
+      body: `<div class="action-modal-grid"><div><span>Categoria</span><strong>${escapeHtml(cells[1])}</strong></div><div><span>Quantidade</span><strong>${escapeHtml(cells[2])}</strong></div><div><span>Status</span><strong>${escapeHtml(cells[3])}</strong></div><div><span>Propostas</span><strong>${escapeHtml(cells[4])}</strong></div><div><span>Prazo</span><strong>${escapeHtml(cells[5])}</strong></div><div><span>Arquivo tecnico</span><strong>arquivo-tecnico.pdf</strong></div></div><div class="form-actions"><button class="btn btn-ghost js-action-modal-close" type="button">Fechar</button></div>`
+    });
+    return;
+  }
+  showToast(`${action} acionado`);
 });
 
 document.querySelectorAll(".js-table-search").forEach((input) => {
@@ -283,16 +976,33 @@ if (employeeForm) {
     const context = employeeForm.dataset.context || "empresa";
     const data = new FormData(employeeForm);
     const table = document.querySelector(`[data-employee-table="${context}"]`);
-    if (table) {
+    const appendEmployee = (item) => {
+      if (!table) return;
       const row = document.createElement("tr");
       row.dataset.searchRow = "";
-      row.innerHTML = `<td>${escapeHtml(data.get("name"))}</td><td>${escapeHtml(data.get("email"))}</td><td>${escapeHtml(data.get("role"))}</td><td>${escapeHtml(data.get("type"))}</td><td><span class="badge ${statusClass(data.get("status"))}">${escapeHtml(data.get("status"))}</span></td><td><button class="table-action js-alert" type="button">Editar</button></td>`;
+      row.dataset.employeeId = item?.id || "";
+      row.innerHTML = `<td>${escapeHtml(item?.nome || data.get("name"))}</td><td>${escapeHtml(item?.email || data.get("email"))}</td><td>${escapeHtml(item?.cargo || data.get("role"))}</td><td>${escapeHtml(item?.tipo || data.get("type"))}</td><td><span class="badge warning">Pendente</span></td><td></td>`;
+      renderEmployeeRowActions(row);
       table.appendChild(row);
+      closeEmployeeModal();
+      showToast("Funcion\u00e1rio adicionado com sucesso");
+    };
+    if (window.UsinaLinkApi) {
+      window.UsinaLinkApi.post("/api/funcionarios", {
+        contexto: context,
+        nome: data.get("name"),
+        email: data.get("email"),
+        cargo: data.get("role"),
+        tipo: data.get("type")
+      }).then((result) => appendEmployee(result.funcionario)).catch((error) => showToast(error.message));
+    } else {
+      appendEmployee(null);
     }
-    closeEmployeeModal();
-    showToast("Funcion\u00e1rio adicionado com sucesso");
   });
 }
+
+document.querySelectorAll("[data-employee-table] tr").forEach(renderEmployeeRowActions);
+loadEmployeesFromApi();
 
 function formatCurrencyLike(value, fallback) {
   const clean = value.trim();
@@ -316,10 +1026,43 @@ document.querySelectorAll("#proposal-value, #proposal-deadline, #proposal-freigh
   input.addEventListener("input", updateProposalPreview);
 });
 
+document.addEventListener("input", (event) => {
+  const input = event.target.closest("input[data-mask]");
+  if (input) applyMaskByKey(input);
+});
+
 document.querySelectorAll(".js-send-proposal").forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     updateProposalPreview();
-    showToast("Proposta enviada com sucesso");
-    window.setTimeout(() => { window.location.href = "propostas-enviadas.html"; }, 800);
+    const session = currentSession();
+    const params = new URLSearchParams(window.location.search);
+    const pedidoId = params.get("pedidoId") || "pedido-1";
+    const value = document.querySelector("#proposal-value");
+    const deadline = document.querySelector("#proposal-deadline");
+    const freight = document.querySelector("#proposal-freight");
+    const note = document.querySelector("#proposal-note");
+    if (!value.value.trim() || !deadline.value.trim()) {
+      showToast("Informe valor e prazo para enviar a proposta");
+      return;
+    }
+    try {
+      if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
+      await window.UsinaLinkApi.post("/api/propostas", {
+        pedidoId,
+        usinaId: session.usinaId,
+        usina: session.nome || "Usina",
+        valor: formatCurrencyLike(value.value, "R$ 0,00"),
+        prazo: deadline.value.trim(),
+        frete: formatCurrencyLike(freight.value, "R$ 0,00"),
+        observacao: note.value.trim()
+      });
+      showToast("Proposta enviada com sucesso");
+      window.setTimeout(() => { window.location.href = "propostas-usina.html"; }, 800);
+    } catch (error) {
+      showToast(error.message);
+    }
   });
 });
+
+loadProposalsFromApi();
+applySessionContext();

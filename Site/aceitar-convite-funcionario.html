@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aceitar Convite | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell wide">
+    <a class="brand auth-brand" href="index.html">
+      <span class="brand-icon" aria-hidden="true">US</span>
+      <span>Usinalink</span>
+    </a>
+    <section class="card auth-card large">
+      <span class="eyebrow">Convite de funcion&aacute;rio</span>
+      <h1>Aceitar convite</h1>
+      <p id="invite-status">Carregando dados do convite.</p>
+      <div class="detail-list" id="invite-details"></div>
+      <div class="form-actions">
+        <a class="btn btn-ghost" href="index.html">Voltar</a>
+        <button class="btn btn-primary" id="accept-invite-button" type="button">Aceitar convite</button>
+      </div>
+    </section>
+  </main>
+  <script src="assets/js/api.js"></script>
+  <script>
+    const inviteId = new URLSearchParams(window.location.search).get("id");
+    const statusElement = document.querySelector("#invite-status");
+    const detailsElement = document.querySelector("#invite-details");
+    const button = document.querySelector("#accept-invite-button");
+    let funcionario = null;
+
+    function renderInvite(item) {
+      funcionario = item;
+      const owner = item.contexto === "usina" ? "Usina vinculada" : "Empresa vinculada";
+      statusElement.textContent = "Revise os dados abaixo antes de aceitar o convite.";
+      detailsElement.innerHTML = `
+        <div><span>${owner}</span><strong>${item.ownerId || "Conta UsinaLink"}</strong></div>
+        <div><span>Nome</span><strong>${item.nome || ""}</strong></div>
+        <div><span>E-mail</span><strong>${item.email || ""}</strong></div>
+        <div><span>Cargo</span><strong>${item.cargo || ""}</strong></div>
+        <div><span>Status atual</span><strong>${item.status || "Pendente"}</strong></div>`;
+    }
+
+    async function loadInvite() {
+      if (!inviteId) {
+        statusElement.textContent = "Convite nao informado.";
+        button.disabled = true;
+        return;
+      }
+      try {
+        renderInvite(await window.UsinaLinkApi.get(`/api/funcionarios/${encodeURIComponent(inviteId)}`));
+      } catch (error) {
+        statusElement.textContent = error.message;
+        button.disabled = true;
+      }
+    }
+
+    button.addEventListener("click", async () => {
+      if (!funcionario) return;
+      try {
+        await window.UsinaLinkApi.put(`/api/funcionarios/${encodeURIComponent(inviteId)}/aceitar-convite`, {});
+        statusElement.textContent = "Convite aceito com sucesso. Seu status agora e Ativo.";
+        button.disabled = true;
+      } catch (error) {
+        statusElement.textContent = error.message;
+      }
+    });
+
+    loadInvite();
+  </script>
+</body>
+</html>

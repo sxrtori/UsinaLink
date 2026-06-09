@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Empresa | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="brand auth-brand" href="index.html">
+      <span class="brand-icon" aria-hidden="true">US</span>
+      <span>Usinalink</span>
+    </a>
+    <section class="card auth-card">
+      <span class="eyebrow">Acesso empresarial</span>
+      <h1>Entrar como empresa</h1>
+      <p>Acesse sua &aacute;rea para acompanhar solicita&ccedil;&otilde;es e propostas.</p>
+      <form class="form js-login-form" data-login-type="empresa" data-redirect="dashboard-pessoa-juridica.html" novalidate>
+        <label class="field">
+          <span>E-mail corporativo</span>
+          <div class="input-icon"><span>@</span><input id="login-empresa-email" name="email" type="email" placeholder="compras@empresa.com.br" required></div>
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <div class="input-icon"><span>*</span><input id="login-empresa-senha" name="senha" type="password" placeholder="Digite sua senha" required></div>
+        </label>
+        <button class="btn full" type="submit">Entrar como empresa</button>
+      </form>
+      <a class="text-link centered" href="cadastro.html">Criar nova conta</a>
+    </section>
+  </main>
+  <script src="assets/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
