@@ -1,0 +1,2 @@
+import { Module } from '@nestjs/common';import { TypeOrmModule } from '@nestjs/typeorm';import { AuthModule } from '../auth/auth.module';import { Pagamento } from '../common/entities/core.entities';import { ContextoUsuarioModule } from '../contexto-usuario/contexto-usuario.module';import { PagamentoController } from './pagamento.controller';
+@Module({imports:[TypeOrmModule.forFeature([Pagamento]),AuthModule,ContextoUsuarioModule],controllers:[PagamentoController]}) export class PagamentoModule{}

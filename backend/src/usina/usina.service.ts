@@ -1,18 +1,2 @@
-import { Injectable } from '@nestjs/common';
-import { JsonDatabaseService } from '../database/json-database.service';
-import { Usina } from './usina.entity';
-
-@Injectable()
-export class UsinaService {
-  constructor(private readonly database: JsonDatabaseService) {}
-
-  buscar(nome?: string, cnpj?: string) {
-    if (cnpj) {
-      const cleanCnpj = cnpj.replace(/\D/g, '');
-      return this.database.findOne<Usina>('usinas', usina => usina.cnpj === cleanCnpj);
-    }
-
-    const search = String(nome || '').toLowerCase();
-    return this.database.findOne<Usina>('usinas', usina => String(usina.nome || '').toLowerCase().includes(search));
-  }
-}
+import { Injectable, NotFoundException } from '@nestjs/common';import { InjectRepository } from '@nestjs/typeorm';import { Repository } from 'typeorm';import { Usina } from '../common/entities/core.entities';
+@Injectable() export class UsinaService{constructor(@InjectRepository(Usina)private repo:Repository<Usina>){} async buscar(nome?:string,cnpj?:string){const where=cnpj?{cnpj:String(cnpj).replace(/\D/g,'')}:{};const rows= await this.repo.find({where:where as any,take:20});const s=String(nome||'').toLowerCase();return cnpj?rows[0]:rows.find(e=>String(e.nomeFantasia||e.razaoSocial||'').toLowerCase().includes(s));} async porId(id:number){const r=await this.repo.findOne({where:{idUsina:id},relations:{propostas:true}});if(!r)throw new NotFoundException();return r}}

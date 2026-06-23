@@ -1,13 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Empresa, EnderecoEmpresa, Funcionario, Notificacao, Pagamento, Pedido, Proposta, SolicitacaoBloqueioUsina } from '../common/entities/core.entities';
+import { ContextoUsuarioModule } from '../contexto-usuario/contexto-usuario.module';
 import { EmpresaController } from './empresa.controller';
-import { empresaProviders } from './empresa.provider';
 import { EmpresaService } from './empresa.service';
-
-@Module({
-  imports: [DatabaseModule],
-  controllers: [EmpresaController],
-  providers: [...empresaProviders],
-  exports: [EmpresaService]
-})
-export class EmpresaModule {}
+@Module({ imports:[TypeOrmModule.forFeature([Empresa, EnderecoEmpresa, Funcionario, Pedido, Proposta, Pagamento, SolicitacaoBloqueioUsina, Notificacao]), ContextoUsuarioModule], controllers:[EmpresaController], providers:[EmpresaService] }) export class EmpresaModule {}

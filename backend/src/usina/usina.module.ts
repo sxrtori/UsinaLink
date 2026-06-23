@@ -1,13 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BloqueioUsina, EnderecoUsina, Funcionario, Notificacao, Pedido, Proposta, Usina } from '../common/entities/core.entities';
+import { ContextoUsuarioModule } from '../contexto-usuario/contexto-usuario.module';
 import { UsinaController } from './usina.controller';
-import { usinaProviders } from './usina.provider';
 import { UsinaService } from './usina.service';
-
-@Module({
-  imports: [DatabaseModule],
-  controllers: [UsinaController],
-  providers: [...usinaProviders],
-  exports: [UsinaService]
-})
-export class UsinaModule {}
+@Module({ imports:[TypeOrmModule.forFeature([Usina, EnderecoUsina, Funcionario, Proposta, BloqueioUsina, Pedido, Notificacao]), ContextoUsuarioModule], controllers:[UsinaController], providers:[UsinaService] }) export class UsinaModule {}
