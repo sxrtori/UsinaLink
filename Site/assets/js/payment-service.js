@@ -5,9 +5,7 @@
 
   async function apiGet(path) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.get(path);
-    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`);
-    if (!response.ok) throw new Error("API indisponivel");
-    return response.json();
+    throw new Error("Cliente da API nao carregado.");
   }
 
   async function loadSourceData() {

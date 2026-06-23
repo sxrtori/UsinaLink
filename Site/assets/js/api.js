@@ -1,9 +1,9 @@
 (function () {
   const API_BASE_URL = 'http://localhost:3000/api';
 
-  function buildUrl(path) {
-    const cleanPath = String(path || '').replace(/^\/api(?=\/|$)/, '').replace(/^\/?/, '/');
-    return `${API_BASE_URL}${cleanPath}`;
+  function buildUrl(endpoint) {
+    const cleanEndpoint = String(endpoint || '').replace(/^\/api(?=\/|$)/, '').replace(/^\/?/, '/');
+    return `${API_BASE_URL}${cleanEndpoint}`;
   }
 
   function extractErrorMessage(data) {
@@ -12,33 +12,37 @@
     return data?.message || data?.error || 'Nao foi possivel concluir a requisicao.';
   }
 
-  async function request(path, options = {}) {
-    const response = await fetch(buildUrl(path), {
+  async function apiRequest(endpoint, options = {}) {
+    const response = await fetch(buildUrl(endpoint), {
       ...options,
       headers: {
         'Content-Type': 'application/json',
         ...(localStorage.getItem('accessToken') ? { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } : {}),
-        ...(options.headers || {})
-      }
-    }).catch((error) => {
-      throw new Error('Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.', { cause: error });
+        ...(options.headers || {}),
+      },
     });
 
-    const data = await response.json().catch(() => ({}));
+    const contentType = response.headers.get('content-type');
+    const data = contentType?.includes('application/json') ? await response.json() : null;
+
     if (!response.ok) {
       throw new Error(extractErrorMessage(data));
     }
+
     return data;
   }
 
+  window.API_BASE_URL = API_BASE_URL;
+  window.apiRequest = apiRequest;
   window.UsinaLinkApi = {
     API_BASE_URL,
     BASE_URL: API_BASE_URL,
     buildUrl,
-    get: (path) => request(path),
-    post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),
-    patch: (path, body) => request(path, { method: 'PATCH', body: JSON.stringify(body) }),
-    put: (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
-    delete: (path) => request(path, { method: 'DELETE' })
+    request: apiRequest,
+    get: (endpoint) => apiRequest(endpoint),
+    post: (endpoint, body) => apiRequest(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+    patch: (endpoint, body) => apiRequest(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+    put: (endpoint, body) => apiRequest(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+    delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
   };
 }());
