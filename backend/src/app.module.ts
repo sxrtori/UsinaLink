@@ -9,12 +9,18 @@ import { PropostaModule } from './proposta/proposta.module';
 import { AvaliacaoModule } from './avaliacao/avaliacao.module';
 import { SolicitacaoBloqueioUsinaModule } from './solicitacao-bloqueio-usina/solicitacao-bloqueio-usina.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { AuthModule } from './auth/auth.module';
+import { ContextoUsuarioModule } from './contexto-usuario/contexto-usuario.module';
 import { UsinaModule } from './usina/usina.module';
+import { NotificacaoModule } from './notificacao/notificacao.module';
+import { PagamentoModule } from './pagamento/pagamento.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
+    AuthModule,
+    ContextoUsuarioModule,
     EmpresaModule,
     UsinaModule,
     UsuarioModule,
@@ -22,7 +28,9 @@ import { UsinaModule } from './usina/usina.module';
     PedidoModule,
     PropostaModule,
     AvaliacaoModule,
-    SolicitacaoBloqueioUsinaModule
+    SolicitacaoBloqueioUsinaModule,
+    NotificacaoModule,
+    PagamentoModule
   ],
   controllers: [AppController]
 })

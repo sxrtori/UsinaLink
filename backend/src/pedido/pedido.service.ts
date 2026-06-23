@@ -1,16 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { JsonDatabaseService } from '../database/json-database.service';
-import { Pedido } from './pedido.entity';
-
-@Injectable()
-export class PedidoService {
-  constructor(private readonly database: JsonDatabaseService) {}
-
-  findAll() {
-    return this.database.findAll<Pedido>('pedidos');
-  }
-
-  findOne(id: string) {
-    return this.database.findOne<Pedido>('pedidos', pedido => pedido.id === id);
-  }
-}
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';import { DataSource, In, Repository } from 'typeorm';import { ArquivoPedido, HistoricoStatusPedido, ItemPedido, Pedido, Proposta } from '../common/entities/core.entities';import { ContextoUsuarioService } from '../contexto-usuario/contexto-usuario.service';
+@Injectable() export class PedidoService{constructor(@InjectDataSource()private ds:DataSource,@InjectRepository(Pedido)private pedidos:Repository<Pedido>,@InjectRepository(Proposta)private propostas:Repository<Proposta>,private ctx:ContextoUsuarioService){}
+async criar(dto:any,user:any){const idEmpresa=await this.ctx.obterEmpresaId(user.sub);return this.ds.transaction(async m=>{const p=await m.save(Pedido,{idEmpresaCompradora:idEmpresa,idUsuarioSolicitante:user.sub,numeroPedido:dto.numeroPedido,urgencia:dto.urgencia,status:'aberto',observacoes:dto.observacoes||dto.descricao,prazoEntregaDias:dto.prazoEntregaDias,dataPedido:new Date()});for(const it of dto.itens||[]) await m.save(ItemPedido,{...it,idPedido:p.idPedido});for(const arq of dto.arquivos||[]) await m.save(ArquivoPedido,{...arq,idPedido:p.idPedido});await m.save(HistoricoStatusPedido,{idPedido:p.idPedido,statusNovo:'aberto',idUsuarioResponsavel:user.sub,observacao:'Pedido criado'});return p;});}
+async meus(user:any){const idEmpresa=await this.ctx.obterEmpresaId(user.sub);return this.pedidos.find({where:{idEmpresaCompradora:idEmpresa},relations:{itens:true,arquivos:true,propostas:true}})}
+disponiveis(){return this.pedidos.find({where:{status:In(['aberto','em_negociacao'])},relations:{itens:true,arquivos:true,empresaCompradora:true}})}
+async detalhe(id:number,user:any){const p=await this.pedidos.findOne({where:{idPedido:id},relations:{itens:true,arquivos:true,propostas:true,empresaCompradora:true}});if(!p)throw new NotFoundException('Pedido nao encontrado.');if(user.tipoUsuario?.includes('empresa')){if(p.idEmpresaCompradora!==await this.ctx.obterEmpresaId(user.sub))throw new ForbiddenException();}else{const idUsina=await this.ctx.obterUsinaId(user.sub);if(!['aberto','em_negociacao'].includes(p.status)&&!p.propostas?.some(x=>x.idUsina===idUsina))throw new ForbiddenException();}return p;}
+async atualizar(id:number,dto:any,user:any){const p=await this.detalhe(id,user);Object.assign(p,dto);return this.pedidos.save(p)}
+async cancelar(id:number,user:any){const p=await this.detalhe(id,user);p.status='cancelado';return this.pedidos.save(p)} }

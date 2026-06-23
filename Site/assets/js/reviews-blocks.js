@@ -187,7 +187,7 @@
     try {
       const [requests, proposals] = await Promise.all([
         apiGet(`/api/solicitacoes-bloqueio-usina/minhas?empresaId=${encodeURIComponent(empresaId)}`),
-        apiGet(`/api/propostas/empresa/${encodeURIComponent(empresaId)}`)
+        apiGet(`/api/propostas/recebidas`)
       ]);
       const usinas = [...new Map(proposals.map(proposal => [proposal.usinaId, proposal])).values()];
       const usinaSelect = document.querySelector("[data-block-usina]");

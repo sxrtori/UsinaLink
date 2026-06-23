@@ -1,13 +1,2 @@
-import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
-import { PedidoModule } from '../pedido/pedido.module';
-import { SolicitacaoBloqueioUsinaModule } from '../solicitacao-bloqueio-usina/solicitacao-bloqueio-usina.module';
-import { PropostaController } from './proposta.controller';
-import { propostaProviders } from './proposta.provider';
-
-@Module({
-  imports: [DatabaseModule, PedidoModule, SolicitacaoBloqueioUsinaModule],
-  controllers: [PropostaController],
-  providers: [...propostaProviders]
-})
-export class PropostaModule {}
+import { Module } from '@nestjs/common';import { TypeOrmModule } from '@nestjs/typeorm';import { AuthModule } from '../auth/auth.module';import { BloqueioUsina, HistoricoStatusPedido, Notificacao, Pedido, Proposta } from '../common/entities/core.entities';import { ContextoUsuarioModule } from '../contexto-usuario/contexto-usuario.module';import { PropostaController } from './proposta.controller';import { PropostaService } from './proposta.service';
+@Module({imports:[TypeOrmModule.forFeature([Proposta,Pedido,BloqueioUsina,HistoricoStatusPedido,Notificacao]),AuthModule,ContextoUsuarioModule],controllers:[PropostaController],providers:[PropostaService]}) export class PropostaModule{}

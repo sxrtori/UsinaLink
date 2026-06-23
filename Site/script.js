@@ -337,7 +337,6 @@ if (signupForm) {
     const apiType = type === "pessoa" ? "pessoa_fisica" : type;
     payload.tipo = apiType;
     const finishSignup = (user) => {
-      localStorage.setItem(signupStorageKey, JSON.stringify([...accounts, payload]));
       showToast("Cadastro realizado com sucesso");
       window.setTimeout(() => { window.location.href = signupForm.dataset.redirect; }, 800);
     };
@@ -382,12 +381,14 @@ document.querySelectorAll(".js-login-form").forEach((form) => {
 
     try {
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
-      const result = await window.UsinaLinkApi.post("/api/auth/login", {
+      const result = await window.UsinaLinkApi.post(`/api/auth/login/${tipo}`, {
         email: emailInput.value,
-        senha: passwordInput.value,
-        tipo
+        senha: passwordInput.value
       });
-      sessionStorage.setItem("usinalinkSession", JSON.stringify(result.user));
+      localStorage.setItem("accessToken", result.accessToken);
+      localStorage.setItem("tipoUsuario", result.tipoUsuario);
+      localStorage.setItem("nome", result.nome || "");
+      sessionStorage.removeItem("usinalinkSession");
       showToast("Login realizado com sucesso");
       window.setTimeout(() => { window.location.href = redirect; }, 500);
     } catch (error) {
@@ -783,7 +784,7 @@ async function loadProposalsFromApi() {
   const usinaTable = document.querySelector("body[data-user-role='usina'] tbody");
   if (document.body.dataset.userRole === "usina" && usinaTable && window.location.pathname.includes("propostas-usina")) {
     try {
-      const proposals = await window.UsinaLinkApi.get(`/api/propostas/usina/${encodeURIComponent(session.usinaId || "")}`);
+      const proposals = await window.UsinaLinkApi.get(`/api/propostas/enviadas`);
       usinaTable.innerHTML = proposals.map(proposalRowMarkup).join("") || '<tr><td colspan="7">Nenhuma proposta enviada.</td></tr>';
     } catch (error) {
       showToast(error.message);
@@ -792,7 +793,7 @@ async function loadProposalsFromApi() {
   const empresaGrid = document.querySelector("body[data-user-role='empresa'] .proposal-grid");
   if (empresaGrid && window.location.pathname.includes("propostas")) {
     try {
-      const proposals = await window.UsinaLinkApi.get(`/api/propostas/empresa/${encodeURIComponent(session.empresaId || "")}`);
+      const proposals = await window.UsinaLinkApi.get(`/api/propostas/recebidas`);
       empresaGrid.innerHTML = proposals.map((item, index) => proposalCardMarkup(item, index === 0)).join("") || '<article class="card proposal-card"><h2>Nenhuma proposta recebida</h2><p>As propostas enviadas pelas usinas aparecerao aqui.</p></article>';
     } catch (error) {
       showToast(error.message);
@@ -948,7 +949,7 @@ document.addEventListener("click", (event) => {
         row.classList.add("is-hidden");
         showToast("Proposta cancelada");
       };
-      if (window.UsinaLinkApi && row.dataset.proposalId) window.UsinaLinkApi.put(`/api/propostas/${row.dataset.proposalId}/cancelar`, {}).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.proposalId) window.UsinaLinkApi.patch(`/api/propostas/${row.dataset.proposalId}/cancelar`, {}).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -1197,9 +1198,7 @@ document.querySelectorAll(".js-send-proposal").forEach((button) => {
       button.textContent = "Enviando...";
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
       await window.UsinaLinkApi.post("/api/propostas", {
-        pedidoId,
-        usinaId: session.usinaId,
-        usina: session.nome || "Usina",
+        idPedido: pedidoId,
         valor: formatCurrencyLike(value.value, "R$ 0,00"),
         prazo: deadline.value.trim(),
         frete: formatCurrencyLike(freight.value, "R$ 0,00"),

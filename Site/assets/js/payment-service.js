@@ -1,27 +1,7 @@
 (function () {
-  const paymentsKey = "usinalinkPayments";
   const ui = () => window.UsinaLinkUi;
 
-  function readJson(key, fallback) {
-    try {
-      const value = JSON.parse(localStorage.getItem(key) || "null");
-      return value ?? fallback;
-    } catch {
-      return fallback;
-    }
-  }
-
-  function writeJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  function currentSession() {
-    try {
-      return JSON.parse(sessionStorage.getItem("usinalinkSession") || localStorage.getItem("usinalinkSession") || "null") || {};
-    } catch {
-      return {};
-    }
-  }
+  function currentSession() { return { tipoUsuario: localStorage.getItem("tipoUsuario"), nome: localStorage.getItem("nome") }; }
 
   async function apiGet(path) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.get(path);
@@ -31,21 +11,8 @@
   }
 
   async function loadSourceData() {
-    const mock = window.UsinaLinkMockPayments || { orders: [], proposals: [] };
-    const cachedOrders = readJson("usinalinkOrdersCache", []);
-    const cachedProposals = readJson("usinalinkProposalsCache", []);
-    try {
-      const [orders, proposals] = await Promise.all([apiGet("/api/pedidos"), apiGet("/api/propostas")]);
-      writeJson("usinalinkOrdersCache", orders);
-      writeJson("usinalinkProposalsCache", proposals);
-      return { orders: orders.length ? orders : mock.orders, proposals: proposals.length ? proposals : mock.proposals, source: "api" };
-    } catch {
-      return {
-        orders: cachedOrders.length ? cachedOrders : mock.orders,
-        proposals: cachedProposals.length ? cachedProposals : mock.proposals,
-        source: cachedOrders.length ? "localStorage" : "mock"
-      };
-    }
+    const [orders, proposals] = await Promise.all([apiGet("/api/pedidos/meus"), apiGet("/api/propostas/recebidas")]);
+    return { orders, proposals, source: "api" };
   }
 
   function enrichOrder(order, proposals, payments) {
@@ -72,7 +39,7 @@
 
   async function getOrders() {
     const { orders, proposals, source } = await loadSourceData();
-    const payments = readJson(paymentsKey, []);
+    const payments = await apiGet("/api/pagamentos").catch(() => []);
     const session = currentSession();
     let filtered = orders;
     if (session.tipo === "empresa" && session.empresaId) filtered = orders.filter(order => !order.empresaId || order.empresaId === session.empresaId);
@@ -86,7 +53,7 @@
   }
 
   function savePayment(order, method) {
-    const payments = readJson(paymentsKey, []);
+    const payments = await apiGet("/api/pagamentos").catch(() => []);
     const totals = order.totals || ui().calculateTotals(order);
     const payment = {
       id: `pay-${Date.now()}`,

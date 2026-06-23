@@ -1,58 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { JsonDatabaseService } from '../database/json-database.service';
-import { PedidoService } from '../pedido/pedido.service';
-import { SolicitacaoBloqueioUsinaService } from '../solicitacao-bloqueio-usina/solicitacao-bloqueio-usina.service';
-import { CreatePropostaDto } from './dto/create-proposta.dto';
-import { UpdatePropostaDto } from './dto/update-proposta.dto';
-import { Proposta } from './proposta.entity';
-
-@Injectable()
-export class PropostaService {
-  constructor(
-    private readonly database: JsonDatabaseService,
-    private readonly pedidos: PedidoService,
-    private readonly bloqueios: SolicitacaoBloqueioUsinaService
-  ) {}
-
-  async findAll() {
-    const propostas = await this.database.findAll<Proposta>('propostas');
-    return propostas.filter(proposta => proposta.status !== 'Cancelada');
-  }
-
-  async findByUsina(usinaId: string) {
-    const propostas = await this.findAll();
-    return propostas.filter(proposta => proposta.usinaId === usinaId);
-  }
-
-  async findByEmpresa(empresaId: string) {
-    const propostas = await this.findAll();
-    return propostas.filter(proposta => proposta.empresaId === empresaId);
-  }
-
-  async create(dto: CreatePropostaDto) {
-    const pedidoId = dto.pedidoId || dto.solicitacaoId || 'pedido-1';
-    const pedido = await this.pedidos.findOne(pedidoId);
-    if (!pedido) throw new NotFoundException('Pedido nao encontrado.');
-    if (!dto.usinaId) throw new BadRequestException('usinaId e obrigatorio.');
-    if (!dto.valor || !dto.prazo) throw new BadRequestException('Valor e prazo sao obrigatorios.');
-    if (await this.bloqueios.isBlocked(pedido.empresaId, dto.usinaId)) {
-      throw new ForbiddenException('Novas interacoes comerciais entre esta empresa e usina estao bloqueadas.');
-    }
-    const proposta = {
-      ...dto, id: `proposta-${randomUUID()}`, pedidoId, solicitacaoId: pedidoId,
-      empresaId: dto.empresaId || pedido.empresaId, usina: dto.usina || 'Usina',
-      cliente: dto.cliente || pedido.empresa, peca: dto.peca || pedido.peca,
-      frete: dto.frete || 'R$ 0,00', avaliacao: dto.avaliacao || '4,9/5', observacao: dto.observacao || '',
-      material: pedido.material, quantidade: pedido.quantidade, regiao: pedido.regiao, arquivo: pedido.arquivo,
-      status: 'Enviada', dataEnvio: new Date().toLocaleDateString('pt-BR')
-    } as Proposta;
-    return this.database.insert<Proposta>('propostas', proposta);
-  }
-
-  async update(id: string, dto: UpdatePropostaDto) {
-    const proposta = await this.database.update<Proposta>('propostas', id, dto);
-    if (!proposta) throw new NotFoundException('Proposta nao encontrada.');
-    return proposta;
-  }
-}
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';import { DataSource, Not, Repository } from 'typeorm';import { BloqueioUsina, HistoricoStatusPedido, Notificacao, Pedido, Proposta } from '../common/entities/core.entities';import { ContextoUsuarioService } from '../contexto-usuario/contexto-usuario.service';
+@Injectable() export class PropostaService{constructor(@InjectDataSource()private ds:DataSource,@InjectRepository(Proposta)private props:Repository<Proposta>,@InjectRepository(Pedido)private pedidos:Repository<Pedido>,@InjectRepository(BloqueioUsina)private bl:Repository<BloqueioUsina>,private ctx:ContextoUsuarioService){}
+async criar(dto:any,user:any){const idUsina=await this.ctx.obterUsinaId(user.sub);if(await this.bl.findOne({where:{idUsina,ativo:true}}))throw new ForbiddenException('Usina bloqueada.');const pedido=await this.pedidos.findOne({where:{idPedido:+dto.idPedido}});if(!pedido||!['aberto','em_negociacao'].includes(pedido.status))throw new BadRequestException('Pedido indisponivel.');if(await this.props.findOne({where:{idPedido:pedido.idPedido,idUsina,status:Not('cancelada')}}))throw new ConflictException('Ja existe proposta desta usina para este pedido.');return this.ds.transaction(async m=>{const prop=await m.save(Proposta,{idPedido:pedido.idPedido,idUsina,idUsuarioResponsavel:user.sub,valor:dto.valor,prazo:dto.prazo,observacao:dto.observacao,status:'enviada'});if(pedido.status==='aberto'){await m.update(Pedido,pedido.idPedido,{status:'em_negociacao'});await m.save(HistoricoStatusPedido,{idPedido:pedido.idPedido,statusAnterior:'aberto',statusNovo:'em_negociacao',idUsuarioResponsavel:user.sub,observacao:'Primeira proposta recebida'});}return prop;});}
+async recebidas(user:any){const idEmpresa=await this.ctx.obterEmpresaId(user.sub);return this.props.createQueryBuilder('p').innerJoinAndSelect('p.pedido','pedido','pedido.id_empresa_compradora=:idEmpresa',{idEmpresa}).leftJoinAndSelect('p.usina','usina').where('p.status != :c',{c:'cancelada'}).getMany()}
+async enviadas(user:any){return this.props.find({where:{idUsina:await this.ctx.obterUsinaId(user.sub)},relations:{pedido:true}})}
+async detalhe(id:number,user:any){const p=await this.props.findOne({where:{idProposta:id},relations:{pedido:true,usina:true}});if(!p)throw new NotFoundException('Proposta nao encontrada.');if(user.tipoUsuario?.includes('empresa')&&p.pedido.idEmpresaCompradora!==await this.ctx.obterEmpresaId(user.sub))throw new ForbiddenException();if(user.tipoUsuario?.includes('usina')&&p.idUsina!==await this.ctx.obterUsinaId(user.sub))throw new ForbiddenException();return p;}
+async aceitar(id:number,user:any){const p=await this.detalhe(id,user);return this.ds.transaction(async m=>{await m.update(Proposta,{idPedido:p.idPedido},{status:'recusada'});await m.update(Proposta,p.idProposta,{status:'aceita'});await m.update(Pedido,p.idPedido,{status:'proposta_aceita',valorTotal:p.valor});await m.save(HistoricoStatusPedido,{idPedido:p.idPedido,statusAnterior:p.pedido.status,statusNovo:'proposta_aceita',idUsuarioResponsavel:user.sub,observacao:'Proposta aceita'});return {...p,status:'aceita'};});}
+async recusar(id:number,user:any){const p=await this.detalhe(id,user);p.status='recusada';return this.props.save(p)} async cancelar(id:number,user:any){const p=await this.detalhe(id,user);p.status='cancelada';return this.props.save(p)} }

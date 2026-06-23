@@ -6,6 +6,7 @@
       const response = await fetch(`${BASE_URL}${path}`, {
         headers: {
           "Content-Type": "application/json",
+          ...(localStorage.getItem("accessToken") ? { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } : {}),
           ...(options.headers || {})
         },
         ...options
