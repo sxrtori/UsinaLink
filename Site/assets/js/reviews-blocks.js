@@ -11,33 +11,17 @@
 
   async function apiGet(path) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.get(path);
-    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`);
-    if (!response.ok) throw new Error("Nao foi possivel carregar os dados.");
-    return response.json();
+    throw new Error("Cliente da API nao carregado.");
   }
 
   async function apiPost(path, body) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.post(path, body);
-    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || "Nao foi possivel salvar.");
-    return data;
+    throw new Error("Cliente da API nao carregado.");
   }
 
   async function apiPatch(path, body) {
     if (window.UsinaLinkApi?.patch) return window.UsinaLinkApi.patch(path, body);
-    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || "Nao foi possivel atualizar.");
-    return data;
+    throw new Error("Cliente da API nao carregado.");
   }
 
   function notify(message, type = "info") {

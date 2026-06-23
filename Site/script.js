@@ -26,11 +26,11 @@ function showToast(message) {
 
 const signupConfig = {
   empresa: {
-    labels: ["Nome da empresa", "CNPJ", "E-mail corporativo", "Nome do responsavel", "Cargo", "Senha"],
-    placeholders: ["Metal Forte Ltda.", "00.000.000/0001-00", "compras@empresa.com", "Nome e sobrenome", "Gerente de compras", "Crie uma senha"],
-    icons: ["N", "#", "@", "R", "C", "*"],
-    types: ["text", "text", "email", "text", "text", "password"],
-    keys: ["nome", "cnpj", "email", "responsavel", "cargo", "senha"],
+    labels: ["Nome da empresa", "CNPJ", "E-mail corporativo", "Nome do responsavel", "Cargo", "Senha", "Confirmar senha"],
+    placeholders: ["Metal Forte Ltda.", "00.000.000/0001-00", "compras@empresa.com", "Nome e sobrenome", "Gerente de compras", "Crie uma senha", "Digite a senha novamente"],
+    icons: ["N", "#", "@", "R", "C", "*", "*"],
+    types: ["text", "text", "email", "text", "text", "password", "password"],
+    keys: ["nome", "cnpj", "email", "responsavel", "cargo", "senha", "confirmarSenha"],
     button: "Cadastrar empresa",
     redirect: "login-empresa.html",
     orange: false
@@ -165,14 +165,15 @@ function validateSignupInput(input, accounts) {
 }
 
 function collectSignupPayload(form, type) {
-  const payload = { type };
+  const payload = {};
   form.querySelectorAll("input[data-field-key]").forEach((input) => {
     if (input.closest(".field")?.hidden) return;
     const key = input.dataset.fieldKey;
+    if (key === "confirmarSenha") return;
     payload[key] = key === "email" ? input.value.trim().toLowerCase() : input.value.trim();
     if (key === "cpf" || key === "cnpj" || key === "telefone") payload[key] = onlyDigits(input.value);
   });
-  payload.createdAt = new Date().toISOString();
+  if (type === "empresa" || type === "usina") payload.tipo = type;
   return payload;
 }
 
@@ -315,8 +316,10 @@ if (signupForm) {
     if (event.target.matches('[data-field-key="nome"]')) lookupSignupOrganization();
   }, true);
 
-  signupForm.addEventListener("submit", (event) => {
+  signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const submitButton = signupForm.querySelector('[type="submit"]');
+    const originalButtonText = submitButton?.textContent || "Cadastrar";
     const accounts = getStoredAccounts();
     const inputs = [...signupForm.querySelectorAll("input[data-field-key]")].filter((input) => !input.closest(".field")?.hidden);
     const errors = inputs.map((input) => {
@@ -333,22 +336,38 @@ if (signupForm) {
     }
 
     const type = signupForm.dataset.accountType || document.querySelector('.choice-card input[type="radio"]:checked')?.value || "empresa";
-    const payload = collectSignupPayload(signupForm, type);
-    const apiType = type === "pessoa" ? "pessoa_fisica" : type;
-    payload.tipo = apiType;
-    const finishSignup = (user) => {
-      showToast("Cadastro realizado com sucesso");
-      window.setTimeout(() => { window.location.href = signupForm.dataset.redirect; }, 800);
-    };
-
-    if (!window.UsinaLinkApi) {
-      showToast("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
+    if (type === "pessoa") {
+      showToast("Cadastro de pessoa fisica ainda nao esta disponivel no backend.");
       return;
     }
 
-    window.UsinaLinkApi.post(`/cadastro/${apiType}`, payload)
-      .then((result) => finishSignup(result.user))
-      .catch((error) => showToast(error.message));
+    if (!window.UsinaLinkApi?.post) {
+      showToast("Nao foi possivel carregar o cliente da API.");
+      return;
+    }
+
+    const payload = collectSignupPayload(signupForm, type);
+
+    try {
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Cadastrando...";
+      }
+      await window.UsinaLinkApi.post(`/cadastro/${type}`, payload);
+      showToast("Cadastro realizado com sucesso");
+      window.setTimeout(() => { window.location.href = signupForm.dataset.redirect; }, 800);
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        showToast("Nao foi possivel conectar ao servidor.");
+      } else {
+        showToast(error.message);
+      }
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    }
   });
 }
 
@@ -382,7 +401,7 @@ document.querySelectorAll(".js-login-form").forEach((form) => {
     try {
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
       const result = await window.UsinaLinkApi.post(`/auth/login/${tipo}`, {
-        email: emailInput.value,
+        email: emailInput.value.trim().toLowerCase(),
         senha: passwordInput.value
       });
       localStorage.setItem("accessToken", result.accessToken);
@@ -392,8 +411,13 @@ document.querySelectorAll(".js-login-form").forEach((form) => {
       showToast("Login realizado com sucesso");
       window.setTimeout(() => { window.location.href = redirect; }, 500);
     } catch (error) {
-      setFieldState(emailInput, error.message);
-      showToast(error.message);
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        setFieldState(emailInput, "Nao foi possivel conectar ao servidor.");
+        showToast("Nao foi possivel conectar ao servidor.");
+      } else {
+        setFieldState(emailInput, error.message);
+        showToast(error.message);
+      }
     }
   });
 });
