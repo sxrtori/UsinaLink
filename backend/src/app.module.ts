@@ -26,11 +26,11 @@ import { PagamentoModule } from './pagamento/pagamento.module';
     UsuarioModule,
     FuncionarioModule,
     PedidoModule,
-    PropostaModule,
-    AvaliacaoModule,
-    SolicitacaoBloqueioUsinaModule,
-    NotificacaoModule,
-    PagamentoModule
+    // PropostaModule, // A migrar
+    // AvaliacaoModule, // A migrar
+    // SolicitacaoBloqueioUsinaModule, // A migrar
+    // NotificacaoModule, // A migrar
+    // PagamentoModule // A migrar
   ],
   controllers: [AppController]
 })

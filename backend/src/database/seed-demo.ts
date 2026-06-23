@@ -1,28 +1,174 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { PasswordService } from '../auth/password.service';
-import { JsonDatabaseService } from './json-database.service';
+import { 
+  Usuario, 
+  Empresa, 
+  Usina, 
+  Funcionario, 
+  Pedido, 
+  Proposta, 
+  AvaliacaoEntrega, 
+  Pagamento, 
+  Notificacao 
+} from '../common/entities/core.entities';
 
 @Injectable()
 export class SeedDemoService implements OnModuleInit {
-  constructor(private readonly db: JsonDatabaseService, private readonly passwords: PasswordService) {}
+  constructor(
+    @InjectRepository(Usuario) private usuarioRepo: Repository<Usuario>,
+    @InjectRepository(Empresa) private empresaRepo: Repository<Empresa>,
+    @InjectRepository(Usina) private usinaRepo: Repository<Usina>,
+    @InjectRepository(Funcionario) private funcionarioRepo: Repository<Funcionario>,
+    @InjectRepository(Pedido) private pedidoRepo: Repository<Pedido>,
+    @InjectRepository(Proposta) private propostaRepo: Repository<Proposta>,
+    @InjectRepository(AvaliacaoEntrega) private avaliacaoRepo: Repository<AvaliacaoEntrega>,
+    @InjectRepository(Pagamento) private pagamentoRepo: Repository<Pagamento>,
+    @InjectRepository(Notificacao) private notificacaoRepo: Repository<Notificacao>,
+    private readonly passwords: PasswordService
+  ) {}
   async onModuleInit() {
-    await this.db.ensureDatabase();
-    const cols = ['usuarios','empresas','usinas','pessoas-fisicas','funcionarios','pedidos','propostas','avaliacoes','pagamentos','notificacoes','solicitacoes-bloqueio-usina'];
-    const sizes = await Promise.all(cols.map(c => this.db.readAll(c).then(r => r.length)));
-    if (sizes.some(Boolean)) return;
-    const now = new Date().toISOString();
+    // Verificar se já existem dados
+    const usuarioCount = await this.usuarioRepo.count();
+    if (usuarioCount > 0) return;
+
+    const now = new Date();
     const senhaHash = await this.passwords.hash('Demo@123');
-    const empresaUsuario:any = { id: this.db.newId(), idUsuario: this.db.newId(), nome:'Metal Forte Ltda.', email:'empresa@demo.com', senhaHash, tipoUsuario:'empresa', status:'ativo', criadoEm:now, atualizadoEm:now };
-    const usinaUsuario:any = { id: this.db.newId(), idUsuario: this.db.newId(), nome:'Atlas Metais', email:'usina@demo.com', senhaHash, tipoUsuario:'usina', status:'ativo', criadoEm:now, atualizadoEm:now };
-    const pessoaUsuario:any = { id: this.db.newId(), idUsuario: this.db.newId(), nome:'Joao Demo', email:'pessoa@demo.com', senhaHash, tipoUsuario:'pessoa_fisica', status:'ativo', criadoEm:now, atualizadoEm:now };
-    const empresa:any = { id:this.db.newId(), idEmpresa:this.db.newId(), idUsuario:empresaUsuario.idUsuario, razaoSocial:'Metal Forte Ltda.', nomeFantasia:'Metal Forte', cnpj:'11222333000181', email:empresaUsuario.email, telefone:'11999990000', responsavel:'Maria Compras', cargoResponsavel:'Gerente', statusValidacao:'aprovado', criadoEm:now, atualizadoEm:now };
-    const usina:any = { id:this.db.newId(), idUsina:this.db.newId(), idUsuario:usinaUsuario.idUsuario, razaoSocial:'Atlas Metais Ltda.', nomeFantasia:'Atlas Metais', cnpj:'22333444000191', email:usinaUsuario.email, telefone:'21999990000', responsavel:'Carlos Tecnico', especialidade:'Usinagem de precisao', statusValidacao:'aprovado', criadoEm:now, atualizadoEm:now };
-    const pessoa:any = { id:this.db.newId(), idPessoaFisica:this.db.newId(), idUsuario:pessoaUsuario.idUsuario, nome:pessoaUsuario.nome, cpf:'12345678909', email:pessoaUsuario.email, telefone:'31999990000', criadoEm:now, atualizadoEm:now };
-    const funcionario:any = { id:this.db.newId(), idFuncionario:this.db.newId(), idEmpresa:empresa.idEmpresa, nome:'Funcionario Demo', email:'funcionario@demo.com', cargo:'Comprador', tipoAcesso:'operador', status:'ativo', criadoEm:now, atualizadoEm:now };
-    const pedido1:any = { id:this.db.newId(), idPedido:this.db.newId(), idEmpresaCompradora:empresa.idEmpresa, idUsuarioSolicitante:empresaUsuario.idUsuario, numeroPedido:'PED-DEMO-001', urgencia:'media', status:'em_negociacao', observacoes:'Eixo em aço carbono para demonstração', dataPedido:now, criadoEm:now, atualizadoEm:now, itens:[{nome:'Eixo aço carbono', quantidade:10, material:'Aço 1045'}], arquivos:[] };
-    const pedido2:any = { id:this.db.newId(), idPedido:this.db.newId(), idEmpresaCompradora:empresa.idEmpresa, idUsuarioSolicitante:empresaUsuario.idUsuario, numeroPedido:'PED-DEMO-002', urgencia:'alta', status:'aberto', observacoes:'Flange inox para apresentação', dataPedido:now, criadoEm:now, atualizadoEm:now, itens:[{nome:'Flange inox', quantidade:4, material:'Inox 304'}], arquivos:[] };
-    const proposta:any = { id:this.db.newId(), idProposta:this.db.newId(), idPedido:pedido1.idPedido, idUsina:usina.idUsina, idUsuarioResponsavel:usinaUsuario.idUsuario, valor:2500, prazo:'10 dias', observacao:'Entrega rápida para demo', status:'enviada', dataEnvio:now, criadoEm:now, atualizadoEm:now };
-    await this.db.replaceAll('usuarios',[empresaUsuario,usinaUsuario,pessoaUsuario]);
-    await this.db.replaceAll('empresas',[empresa]); await this.db.replaceAll('usinas',[usina]); await this.db.replaceAll('pessoas-fisicas',[pessoa]); await this.db.replaceAll('funcionarios',[funcionario]); await this.db.replaceAll('pedidos',[pedido1,pedido2]); await this.db.replaceAll('propostas',[proposta]); await this.db.replaceAll('avaliacoes',[{id:this.db.newId(),idAvaliacao:this.db.newId(),idPedido:pedido1.idPedido,idEmpresaAvaliadora:empresa.idEmpresa,idUsinaAvaliada:usina.idUsina,nota:5,comentario:'Excelente atendimento.',criadoEm:now,atualizadoEm:now}]); await this.db.replaceAll('pagamentos',[{id:this.db.newId(),idPagamento:this.db.newId(),idPedido:pedido1.idPedido,idProposta:proposta.idProposta,idEmpresaPagadora:empresa.idEmpresa,idUsinaRecebedora:usina.idUsina,valor:2500,status:'pendente',criadoEm:now,atualizadoEm:now}]); await this.db.replaceAll('notificacoes',[{id:this.db.newId(),idNotificacao:this.db.newId(),idUsuario:empresaUsuario.idUsuario,titulo:'Proposta recebida',mensagem:'Atlas Metais enviou uma proposta.',lida:false,dataCriacao:now,criadoEm:now,atualizadoEm:now}]);
+
+    // Criar usuários
+    const empresaUsuario = this.usuarioRepo.create({
+      nome: 'Metal Forte Ltda.',
+      email: 'empresa@demo.com',
+      senhaHash,
+      tipoUsuario: 'empresa',
+      status: 'ativo'
+    });
+
+    const usinaUsuario = this.usuarioRepo.create({
+      nome: 'Atlas Metais',
+      email: 'usina@demo.com',
+      senhaHash,
+      tipoUsuario: 'usina',
+      status: 'ativo'
+    });
+
+    const pessoaUsuario = this.usuarioRepo.create({
+      nome: 'Joao Demo',
+      email: 'pessoa@demo.com',
+      senhaHash,
+      tipoUsuario: 'pessoa_fisica',
+      status: 'ativo'
+    });
+
+    const savedUsuarios = await this.usuarioRepo.save([empresaUsuario, usinaUsuario, pessoaUsuario]);
+
+    // Criar empresa
+    const empresa = this.empresaRepo.create({
+      idUsuario: savedUsuarios[0].idUsuario,
+      razaoSocial: 'Metal Forte Ltda.',
+      nomeFantasia: 'Metal Forte',
+      cnpj: '11222333000181',
+      email: savedUsuarios[0].email,
+      telefone: '11999990000',
+      responsavel: 'Maria Compras',
+      cargoResponsavel: 'Gerente',
+      statusValidacao: 'aprovado'
+    });
+
+    // Criar usina
+    const usina = this.usinaRepo.create({
+      idUsuario: savedUsuarios[1].idUsuario,
+      razaoSocial: 'Atlas Metais Ltda.',
+      nomeFantasia: 'Atlas Metais',
+      cnpj: '22333444000191',
+      email: savedUsuarios[1].email,
+      telefone: '21999990000',
+      responsavel: 'Carlos Tecnico',
+      especialidade: 'Usinagem de precisao',
+      statusValidacao: 'aprovado'
+    });
+
+    // Criar funcionário
+    const funcionario = this.funcionarioRepo.create({
+      idEmpresa: (await this.empresaRepo.save(empresa)).idEmpresa,
+      nome: 'Funcionario Demo',
+      email: 'funcionario@demo.com',
+      cargo: 'Comprador',
+      tipoAcesso: 'operador',
+      status: 'ativo'
+    });
+
+    const savedEmpresa = await this.empresaRepo.save(empresa);
+    const savedUsina = await this.usinaRepo.save(usina);
+    await this.funcionarioRepo.save(funcionario);
+
+    // Criar pedidos
+    const pedido1 = this.pedidoRepo.create({
+      idEmpresaCompradora: savedEmpresa.idEmpresa,
+      idUsuarioSolicitante: savedUsuarios[0].idUsuario,
+      numeroPedido: 'PED-DEMO-001',
+      urgencia: 'media',
+      status: 'em_negociacao',
+      observacoes: 'Eixo em aço carbono para demonstração',
+      dataPedido: now
+    });
+
+    const pedido2 = this.pedidoRepo.create({
+      idEmpresaCompradora: savedEmpresa.idEmpresa,
+      idUsuarioSolicitante: savedUsuarios[0].idUsuario,
+      numeroPedido: 'PED-DEMO-002',
+      urgencia: 'alta',
+      status: 'aberto',
+      observacoes: 'Flange inox para apresentação',
+      dataPedido: now
+    });
+
+    const savedPedidos = await this.pedidoRepo.save([pedido1, pedido2]);
+
+    // Criar proposta
+    const proposta = this.propostaRepo.create({
+      idPedido: savedPedidos[0].idPedido,
+      idUsina: savedUsina.idUsina,
+      idUsuarioResponsavel: savedUsuarios[1].idUsuario,
+      valor: 2500,
+      prazo: '10 dias',
+      observacao: 'Entrega rápida para demo',
+      status: 'enviada',
+      dataEnvio: now
+    });
+
+    const savedProposta = await this.propostaRepo.save(proposta);
+
+    // Criar avaliação
+    const avaliacao = this.avaliacaoRepo.create({
+      idPedido: savedPedidos[0].idPedido,
+      idEmpresaAvaliadora: savedEmpresa.idEmpresa,
+      idUsinaAvaliada: savedUsina.idUsina,
+      nota: 5,
+      comentario: 'Excelente atendimento.'
+    });
+
+    // Criar pagamento
+    const pagamento = this.pagamentoRepo.create({
+      idPedido: savedPedidos[0].idPedido,
+      idProposta: savedProposta.idProposta,
+      idEmpresaPagadora: savedEmpresa.idEmpresa,
+      idUsinaRecebedora: savedUsina.idUsina,
+      valor: 2500,
+      status: 'pendente'
+    });
+
+    // Criar notificação
+    const notificacao = this.notificacaoRepo.create({
+      idUsuario: savedUsuarios[0].idUsuario,
+      titulo: 'Proposta recebida',
+      mensagem: 'Atlas Metais enviou uma proposta.',
+      lida: false
+    });
+
+    await this.avaliacaoRepo.save(avaliacao);
+    await this.pagamentoRepo.save(pagamento);
+    await this.notificacaoRepo.save(notificacao);
   }
 }

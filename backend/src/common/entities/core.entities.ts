@@ -18,7 +18,7 @@ export class Usuario {
 @Entity({ name: 'empresa' })
 export class Empresa {
   @PrimaryGeneratedColumn({ name: 'id_empresa' }) idEmpresa: number;
-  @Column({ name: 'id_usuario' }) idUsuario: number;
+  @Column({ name: 'id_usuario_responsavel' }) idUsuario: number;
   @Column({ name: 'razao_social', nullable: true }) razaoSocial?: string;
   @Column({ name: 'nome_fantasia', nullable: true }) nomeFantasia?: string;
   @Column({ name: 'cnpj', unique: true }) cnpj: string;
