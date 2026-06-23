@@ -11,12 +11,14 @@
     <aside class="sidebar">
       <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
       <nav class="side-nav orange-nav" data-role-nav="usina">
-        <a href="dashboard-usina.html">Dashboard usina</a>
-        <a href="perfil-usina.html">Perfil</a>
-        <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
-        <a href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
-        <a class="active" href="propostas-usina.html">Propostas enviadas</a>
-        <a href="index.html">Sair</a>
+        <a href="dashboard-usina.html" data-icon="D">Dashboard usina</a>
+        <a href="perfil-usina.html" data-icon="I">Perfil</a>
+        <a href="funcionarios-usina.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="pedidos-disponiveis.html" data-icon="P">Pedidos dispon&iacute;veis</a>
+        <a class="active" href="propostas-usina.html" data-icon="E">Propostas enviadas</a>
+        <a href="historico-pedidos.html" data-icon="H">Hist&oacute;rico relacionado</a>
+        <a href="avaliacoes-usina.html" data-icon="A">Avalia&ccedil;&otilde;es recebidas</a>
+        <a href="index.html" data-icon="X">Sair</a>
       </nav>
     </aside>
 
@@ -71,13 +73,13 @@
         </article>
 
         <article class="card proposal-card quote-preview">
-          <span class="best-label orange-label">Pr&eacute;via da proposta</span>
-          <h2>Usina Atlas Metais</h2>
-          <strong class="price" id="preview-value">R$ 18.500,00</strong>
+          <span class="best-label orange-label">Resumo financeiro</span>
+          <h2>Total calculado</h2>
+          <strong class="price" id="preview-total">R$ 19.450,00</strong>
           <dl>
+            <div><dt>Valor da proposta</dt><dd id="preview-value">R$ 18.500,00</dd></div>
+            <div><dt>Valor do frete</dt><dd id="preview-freight">R$ 950,00</dd></div>
             <div><dt>Prazo de fabrica&ccedil;&atilde;o</dt><dd id="preview-deadline">18 dias</dd></div>
-            <div><dt>Frete</dt><dd id="preview-freight">R$ 950,00</dd></div>
-            <div><dt>Avalia&ccedil;&atilde;o</dt><dd>4,9/5</dd></div>
           </dl>
           <p id="preview-note">Proposta com inspe&ccedil;&atilde;o dimensional e embalagem refor&ccedil;ada.</p>
         </article>

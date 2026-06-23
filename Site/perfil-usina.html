@@ -11,12 +11,14 @@
     <aside class="sidebar">
       <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
       <nav class="side-nav orange-nav" data-role-nav="usina">
-        <a href="dashboard-usina.html">Dashboard usina</a>
-        <a class="active" href="perfil-usina.html">Perfil</a>
-        <a href="funcionarios-usina.html">Funcion&aacute;rios</a>
-        <a href="pedidos-disponiveis.html">Pedidos dispon&iacute;veis</a>
-        <a href="propostas-usina.html">Propostas enviadas</a>
-        <a href="index.html">Sair</a>
+        <a href="dashboard-usina.html" data-icon="D">Dashboard usina</a>
+        <a class="active" href="perfil-usina.html" data-icon="I">Perfil</a>
+        <a href="funcionarios-usina.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="pedidos-disponiveis.html" data-icon="P">Pedidos dispon&iacute;veis</a>
+        <a href="propostas-usina.html" data-icon="E">Propostas enviadas</a>
+        <a href="historico-pedidos.html" data-icon="H">Hist&oacute;rico relacionado</a>
+        <a href="avaliacoes-usina.html" data-icon="A">Avalia&ccedil;&otilde;es recebidas</a>
+        <a href="index.html" data-icon="X">Sair</a>
       </nav>
     </aside>
 
@@ -50,6 +52,27 @@
           </div>
           <form class="form-grid js-demo-form" id="profile-dynamic-form"></form>
         </article>
+
+        <aside class="card rating-summary-card">
+          <div class="panel-heading">
+            <h2>Avalia&ccedil;&otilde;es</h2>
+            <p>M&eacute;dia geral e classifica&ccedil;&otilde;es por categoria.</p>
+          </div>
+          <div class="rating-overview">
+            <div class="rating-main">
+              <strong class="rating-score" data-usina-rating-average>0</strong>
+              <span class="rating-stars" data-usina-rating-stars></span>
+              <span class="rating-count" data-usina-rating-count>0 avalia&ccedil;&otilde;es</span>
+            </div>
+            <div class="rating-breakdown">
+              <div><span>Qualidade</span><strong data-usina-rating-quality>0</strong></div>
+              <div><span>Prazo</span><strong data-usina-rating-prazo>0</strong></div>
+              <div><span>Comunica&ccedil;&atilde;o</span><strong data-usina-rating-comunicacao>0</strong></div>
+            </div>
+          </div>
+          <div class="rating-distribution" data-usina-rating-distribution></div>
+          <a class="btn btn-small btn-ghost" href="avaliacoes-usina.html">Ver todas as avalia&ccedil;&otilde;es</a>
+        </aside>
       </section>
     </main>
   </div>

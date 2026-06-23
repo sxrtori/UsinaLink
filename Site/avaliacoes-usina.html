@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avalia&ccedil;&otilde;es Recebidas | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="orange-mode" data-user-role="usina">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon orange-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav orange-nav" data-role-nav="usina">
+        <a href="dashboard-usina.html" data-icon="D">Dashboard usina</a>
+        <a href="perfil-usina.html" data-icon="I">Perfil</a>
+        <a href="funcionarios-usina.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="pedidos-disponiveis.html" data-icon="P">Pedidos dispon&iacute;veis</a>
+        <a href="propostas-usina.html" data-icon="E">Propostas enviadas</a>
+        <a href="historico-pedidos.html" data-icon="H">Hist&oacute;rico relacionado</a>
+        <a class="active" href="avaliacoes-usina.html" data-icon="A">Avalia&ccedil;&otilde;es recebidas</a>
+        <a href="index.html" data-icon="X">Sair</a>
+      </nav>
+    </aside>
+    <main class="app-main">
+      <header class="page-header clean-header">
+        <div><span class="eyebrow orange-text">Reputa&ccedil;&atilde;o</span><h1>Avalia&ccedil;&otilde;es recebidas</h1><p>Acompanhe notas, coment&aacute;rios e responda avalia&ccedil;&otilde;es de empresas.</p></div>
+      </header>
+      <section class="summary-grid professional compact-summary">
+        <article class="card summary-card orange-accent"><span>M&eacute;dia geral</span><strong data-review-average>0</strong><small data-review-count>0</small></article>
+        <article class="card summary-card orange-accent"><span>Qualidade</span><strong data-review-quality>0</strong><small>Nota m&eacute;dia</small></article>
+        <article class="card summary-card orange-accent"><span>Prazo</span><strong data-review-deadline>0</strong><small>Nota m&eacute;dia</small></article>
+        <article class="card summary-card orange-accent"><span>Comunica&ccedil;&atilde;o</span><strong data-review-communication>0</strong><small>Nota m&eacute;dia</small></article>
+      </section>
+      <section class="review-list" data-plant-reviews aria-live="polite"></section>
+    </main>
+  </div>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/ui-utils.js"></script>
+  <script src="assets/js/reviews-blocks.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

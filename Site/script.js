@@ -2,6 +2,22 @@ const toast = document.createElement("div");
 toast.className = "toast";
 document.body.appendChild(toast);
 
+document.querySelectorAll(".sidebar").forEach((sidebar) => {
+  const nav = sidebar.querySelector(".side-nav");
+  const brand = sidebar.querySelector(".brand");
+  if (!nav || !brand || sidebar.querySelector(".sidebar-toggle")) return;
+  const toggle = document.createElement("button");
+  toggle.className = "sidebar-toggle";
+  toggle.type = "button";
+  toggle.setAttribute("aria-label", "Abrir ou fechar menu");
+  toggle.textContent = "Menu";
+  brand.insertAdjacentElement("afterend", toggle);
+  toggle.addEventListener("click", () => {
+    const open = document.body.classList.toggle("sidebar-open");
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+});
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
@@ -467,6 +483,90 @@ document.querySelectorAll("[data-profile-section]").forEach((item) => {
   });
 });
 
+document.querySelectorAll(".js-toggle-profile-edit").forEach((button) => {
+  button.addEventListener("click", () => {
+    const viewMode = document.querySelector("#profile-view-mode");
+    const formMode = document.querySelector("#profile-dynamic-form");
+    if (viewMode && formMode) {
+      const isEditing = !viewMode.classList.contains("is-hidden");
+      viewMode.classList.toggle("is-hidden", isEditing);
+      formMode.classList.toggle("is-hidden", !isEditing);
+      button.textContent = isEditing ? "Cancelar edi&ccedil;&atilde;o" : "Editar perfil";
+      if (!isEditing) renderProfileSection("gerais");
+    }
+  });
+});
+
+function parseCurrency(value) {
+  return Number(String(value || "0").replace(/\D/g, "")) / 100;
+}
+
+function formatCurrency(value) {
+  return "R$ " + Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function updateProposalTotal() {
+  const valueInput = document.querySelector("#proposal-value");
+  const freightInput = document.querySelector("#proposal-freight");
+  const totalPreview = document.querySelector("#preview-total");
+  const valuePreview = document.querySelector("#preview-value");
+  const freightPreview = document.querySelector("#preview-freight");
+  
+  if (!valueInput || !freightInput || !totalPreview) return;
+  
+  const valorProposta = parseCurrency(valueInput.value);
+  const valorFrete = parseCurrency(freightInput.value);
+  const valorTotal = valorProposta + valorFrete;
+  
+  totalPreview.textContent = formatCurrency(valorTotal);
+  if (valuePreview) valuePreview.textContent = formatCurrency(valorProposta);
+  if (freightPreview) freightPreview.textContent = formatCurrency(valorFrete);
+}
+
+document.querySelectorAll(".js-proposal-form").forEach((form) => {
+  const valueInput = form.querySelector("#proposal-value");
+  const freightInput = form.querySelector("#proposal-freight");
+  const deadlineInput = form.querySelector("#proposal-deadline");
+  const noteInput = form.querySelector("#proposal-note");
+  
+  if (valueInput) valueInput.addEventListener("input", updateProposalTotal);
+  if (freightInput) freightInput.addEventListener("input", updateProposalTotal);
+  if (deadlineInput) {
+    deadlineInput.addEventListener("input", () => {
+      const preview = document.querySelector("#preview-deadline");
+      if (preview) preview.textContent = deadlineInput.value || "18 dias";
+    });
+  }
+  if (noteInput) {
+    noteInput.addEventListener("input", () => {
+      const preview = document.querySelector("#preview-note");
+      if (preview) preview.textContent = noteInput.value || "Sem observa&ccedil;&otilde;es.";
+    });
+  }
+  
+  updateProposalTotal();
+});
+
+function ensureHistoryEmptyState() {
+  const emptyState = document.querySelector("[data-history-empty]");
+  const tableBody = document.querySelector("[data-history-body]");
+  const historyCards = document.querySelector("[data-history-cards]");
+  
+  if (!emptyState || !tableBody) return;
+  
+  const hasRecords = tableBody.children.length > 0 || (historyCards && historyCards.children.length > 0);
+  emptyState.hidden = hasRecords;
+}
+
+document.querySelectorAll("[data-history-body]").forEach(() => {
+  ensureHistoryEmptyState();
+});
+
+const historyObserver = new MutationObserver(() => ensureHistoryEmptyState());
+document.querySelectorAll("[data-history-body]").forEach((body) => {
+  historyObserver.observe(body, { childList: true });
+});
+
 document.querySelectorAll(".js-demo-form").forEach((form) => {
   if (form.classList.contains("signup-dynamic-form")) return;
   form.addEventListener("submit", (event) => {
@@ -536,10 +636,19 @@ function renderEmployeeRowActions(row) {
   if (!row?.closest("[data-employee-table]")) return;
   const actionsCell = row.children[row.children.length - 1];
   const status = employeeStatus(row);
-  const invite = status === "Pendente" ? '<button class="table-action js-alert" type="button">Reenviar convite</button>' : "";
-  const activate = status === "Inativo" ? '<button class="table-action js-alert" type="button">Ativar</button>' : "";
-  const removeText = status === "Inativo" ? "Excluir definitivamente" : "Excluir";
-  actionsCell.innerHTML = `<button class="table-action js-alert" type="button">Editar</button>${invite}${activate}<button class="table-action js-alert" type="button">${removeText}</button>`;
+  const actionsByStatus = {
+    Pendente: ["Editar", "Reenviar convite", "Cancelar convite"],
+    Ativo: ["Editar", "Excluir"],
+    Inativo: ["Ativar", "Excluir definitivamente"]
+  };
+  const actions = actionsByStatus[status] || ["Editar"];
+  actionsCell.innerHTML = `
+    <div class="actions-menu">
+      <button class="icon-action" type="button" aria-label="Abrir acoes">...</button>
+      <div class="actions-menu-list" role="menu">
+        ${actions.map(action => `<button class="table-action js-alert" type="button" role="menuitem">${action}</button>`).join("")}
+      </div>
+    </div>`;
 }
 
 function employeeRowMarkup(item) {
@@ -634,8 +743,27 @@ function applySessionContext() {
   if (profileSubtitle) profileSubtitle.textContent = role === "usina" ? "Perfil industrial da usina logada." : "Perfil comercial da empresa logada.";
 }
 
+function proposalActionsMarkup(status) {
+  const locked = ["Aceita", "Cancelada"].includes(status);
+  const actions = locked ? ["Ver detalhes"] : ["Ver detalhes", "Editar proposta", "Cancelar proposta"];
+  return `
+    <div class="actions-menu">
+      <button class="icon-action" type="button" aria-label="Abrir acoes da proposta">...</button>
+      <div class="actions-menu-list" role="menu">
+        ${actions.map(action => `<button class="table-action js-alert" type="button" role="menuitem">${action}</button>`).join("")}
+      </div>
+    </div>`;
+}
+
+function renderProposalRowActions(row) {
+  if (!row || row.children.length < 7) return;
+  const status = row.querySelector(".badge")?.textContent.trim() || "Enviada";
+  row.children[row.children.length - 1].innerHTML = proposalActionsMarkup(status);
+}
+
 function proposalRowMarkup(item) {
-  return `<tr data-search-row data-proposal-id="${escapeHtml(item.id)}"><td>${escapeHtml(item.peca || "")}</td><td>${escapeHtml(item.cliente || "")}</td><td>${escapeHtml(item.valor || "")}</td><td>${escapeHtml(item.prazo || "")}</td><td><span class="badge ${badgeClass(item.status || "Enviada")}">${escapeHtml(item.status || "Enviada")}</span></td><td>${escapeHtml(item.dataEnvio || "")}</td><td><button class="table-action js-alert" type="button">Ver detalhes</button> <button class="table-action js-alert" type="button">Editar proposta</button> <button class="table-action js-alert" type="button">Cancelar proposta</button></td></tr>`;
+  const status = item.status || "Enviada";
+  return `<tr data-search-row data-proposal-id="${escapeHtml(item.id)}"><td>${escapeHtml(item.peca || "")}</td><td>${escapeHtml(item.cliente || "")}</td><td>${escapeHtml(item.valor || "")}</td><td>${escapeHtml(item.prazo || "")}</td><td><span class="badge ${badgeClass(status)}">${escapeHtml(status)}</span></td><td>${escapeHtml(item.dataEnvio || "")}</td><td>${proposalActionsMarkup(status)}</td></tr>`;
 }
 
 function proposalCardMarkup(item, best) {
@@ -837,6 +965,14 @@ document.addEventListener("click", (event) => {
     } });
     return;
   }
+  if (row && action === "Cancelar convite") {
+    openSimpleConfirm({ title: "Cancelar convite", message: "Deseja cancelar este convite pendente?", confirmText: "Cancelar convite", onConfirm: () => {
+      const finish = () => { setRowStatus(row, "Inativo"); showToast("Convite cancelado"); };
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
+      else finish();
+    } });
+    return;
+  }
   if (row && action === "Ativar") {
     openSimpleConfirm({ title: "Ativar funcionario", message: "Deseja ativar este funcionario novamente?", confirmText: "Ativar", onConfirm: () => {
       const finish = () => { setRowStatus(row, "Ativo"); showToast("Funcionario ativado com sucesso"); };
@@ -1010,13 +1146,23 @@ function formatCurrencyLike(value, fallback) {
   return clean.startsWith("R$") ? clean : `R$ ${clean}`;
 }
 
+function parseCurrencyLike(value) {
+  const clean = String(value || "").replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+  const number = Number(clean);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatBRL(value) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value) || 0);
+}
+
 function updateProposalPreview() {
   const value = document.querySelector("#proposal-value");
   const deadline = document.querySelector("#proposal-deadline");
   const freight = document.querySelector("#proposal-freight");
   const note = document.querySelector("#proposal-note");
   if (!value) return;
-  document.querySelector("#preview-value").textContent = formatCurrencyLike(value.value, "R$ 18.500,00");
+  document.querySelector("#preview-value").textContent = formatBRL(parseCurrencyLike(value.value) + parseCurrencyLike(freight.value));
   document.querySelector("#preview-deadline").textContent = deadline.value || "18 dias";
   document.querySelector("#preview-freight").textContent = formatCurrencyLike(freight.value, "R$ 950,00");
   document.querySelector("#preview-note").textContent = note.value || "Proposta com inspe\u00e7\u00e3o dimensional e embalagem refor\u00e7ada.";
@@ -1033,6 +1179,7 @@ document.addEventListener("input", (event) => {
 
 document.querySelectorAll(".js-send-proposal").forEach((button) => {
   button.addEventListener("click", async () => {
+    if (button.disabled) return;
     updateProposalPreview();
     const session = currentSession();
     const params = new URLSearchParams(window.location.search);
@@ -1046,6 +1193,8 @@ document.querySelectorAll(".js-send-proposal").forEach((button) => {
       return;
     }
     try {
+      button.disabled = true;
+      button.textContent = "Enviando...";
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
       await window.UsinaLinkApi.post("/api/propostas", {
         pedidoId,
@@ -1060,9 +1209,15 @@ document.querySelectorAll(".js-send-proposal").forEach((button) => {
       window.setTimeout(() => { window.location.href = "propostas-usina.html"; }, 800);
     } catch (error) {
       showToast(error.message);
+      button.disabled = false;
+      button.textContent = "Enviar proposta";
     }
   });
 });
 
 loadProposalsFromApi();
 applySessionContext();
+
+if (window.location.pathname.includes("propostas-usina") || window.location.pathname.includes("propostas-enviadas")) {
+  document.querySelectorAll("tbody tr[data-search-row]").forEach(renderProposalRowActions);
+}

@@ -3,14 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
   <title>Histórico de Pedidos | Usinalink</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-user-role="empresa">
+=======
+  <title>Hist&oacute;rico de Pedidos | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+>>>>>>> 8621136 (Melhoria visual + adição de novas api)
   <div class="app-layout">
     <aside class="sidebar">
       <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
       <nav class="side-nav" data-role-nav="empresa">
+<<<<<<< HEAD
         <a href="dashboard-empresa.html">Dashboard empresa</a>
         <a href="dashboard-pessoa-juridica.html">Pe&ccedil;as comerciais</a>
         <a href="perfil-empresa.html">Perfil</a>
@@ -173,6 +181,56 @@
     </main>
   </div>
   <script src="assets/js/auth-guard.js"></script>
+=======
+        <a href="dashboard-empresa.html" data-icon="D">Dashboard empresa</a>
+        <a href="dashboard-pessoa-juridica.html" data-icon="P">Pe&ccedil;as comerciais</a>
+        <a href="perfil-empresa.html" data-icon="I">Perfil</a>
+        <a href="funcionarios.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html" data-icon="S">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html" data-icon="R">Propostas recebidas</a>
+        <a class="active" href="historico-pedidos.html" data-icon="H">Hist&oacute;rico de pedidos</a>
+        <a href="avaliacoes.html" data-icon="A">Avalia&ccedil;&otilde;es</a>
+        <a href="solicitacoes-bloqueio-usina.html" data-icon="B">Usinas bloqueadas</a>
+        <a href="index.html" data-icon="X">Sair</a>
+      </nav>
+    </aside>
+    <main class="app-main">
+      <header class="page-header premium-header">
+        <div><span class="eyebrow">Pedidos</span><h1>Hist&oacute;rico de pedidos</h1><p>Consulte status, pagamentos, comprovantes e detalhes dos pedidos.</p></div>
+      </header>
+      <section class="card table-card">
+        <div class="history-filters">
+          <label class="search-box"><span>Buscar</span><input data-history-search type="search" placeholder="Pedido, empresa, usina ou status"></label>
+          <label class="search-box"><span>Data</span><input data-history-date type="date"></label>
+        </div>
+        <div class="quick-filters">
+          <button class="filter-pill active" type="button" data-history-filter="Todos">Todos</button>
+          <button class="filter-pill" type="button" data-history-filter="Pendente">Pendente</button>
+          <button class="filter-pill" type="button" data-history-filter="Aguardando pagamento">Aguardando pagamento</button>
+          <button class="filter-pill" type="button" data-history-filter="Pago">Pago</button>
+          <button class="filter-pill" type="button" data-history-filter="Em producao">Em produ&ccedil;&atilde;o</button>
+          <button class="filter-pill" type="button" data-history-filter="Enviado">Enviado</button>
+          <button class="filter-pill" type="button" data-history-filter="Concluido">Conclu&iacute;do</button>
+          <button class="filter-pill" type="button" data-history-filter="Cancelado">Cancelado</button>
+        </div>
+        <div class="empty-state" data-history-empty hidden><strong>Nenhum pedido encontrado</strong><span>Ajuste os filtros ou crie uma nova solicita&ccedil;&atilde;o.</span></div>
+        <div class="table-wrap history-table">
+          <table>
+            <thead><tr><th>Pedido</th><th>Data</th><th>Empresa</th><th>Usina</th><th>Descri&ccedil;&atilde;o</th><th>Valor</th><th>Pagamento</th><th>Status pedido</th><th>Status pgto.</th><th>Prazo</th><th>A&ccedil;&otilde;es</th></tr></thead>
+            <tbody data-history-body></tbody>
+          </table>
+        </div>
+        <div class="history-cards" data-history-cards></div>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/ui-utils.js"></script>
+  <script src="assets/js/mock-payments.js"></script>
+  <script src="assets/js/payment-service.js"></script>
+  <script src="assets/js/order-history.js"></script>
+>>>>>>> 8621136 (Melhoria visual + adição de novas api)
   <script src="script.js"></script>
 </body>
 </html>

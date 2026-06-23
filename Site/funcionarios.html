@@ -11,12 +11,16 @@
     <aside class="sidebar">
       <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
       <nav class="side-nav" data-role-nav="empresa">
-        <a href="dashboard-empresa.html">Dashboard empresa</a>
-        <a href="perfil-empresa.html">Perfil</a>
-        <a class="active" href="funcionarios.html">Funcion&aacute;rios</a>
-        <a href="solicitacoes.html">Solicita&ccedil;&otilde;es</a>
-        <a href="propostas.html">Propostas</a>
-        <a href="index.html">Sair</a>
+        <a href="dashboard-empresa.html" data-icon="D">Dashboard empresa</a>
+        <a href="dashboard-pessoa-juridica.html" data-icon="P">Pe&ccedil;as comerciais</a>
+        <a href="perfil-empresa.html" data-icon="I">Perfil</a>
+        <a class="active" href="funcionarios.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html" data-icon="S">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html" data-icon="R">Propostas recebidas</a>
+        <a href="historico-pedidos.html" data-icon="H">Hist&oacute;rico de pedidos</a>
+        <a href="avaliacoes.html" data-icon="A">Avalia&ccedil;&otilde;es</a>
+        <a href="solicitacoes-bloqueio-usina.html" data-icon="B">Usinas bloqueadas</a>
+        <a href="index.html" data-icon="X">Sair</a>
       </nav>
     </aside>
 
@@ -32,12 +36,12 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Nome</th><th>E-mail</th><th>Cargo</th><th>Tipo de usu&aacute;rio</th><th>Status</th><th>A&ccedil;&otilde;es</th></tr></thead>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Cargo</th><th>Setor</th><th>Status</th><th>A&ccedil;&otilde;es</th></tr></thead>
             <tbody data-employee-table="empresa">
-              <tr data-search-row><td>Ana Martins</td><td>ana@metalforte.com</td><td>Gerente de compras</td><td>Administrador</td><td><span class="badge success">Ativo</span></td><td><button class="table-action js-alert" type="button">Editar</button></td></tr>
+              <tr data-search-row><td>Ana Martins</td><td>ana@metalforte.com</td><td>Gerente de compras</td><td>Compras</td><td><span class="badge success">Ativo</span></td><td><button class="table-action js-alert" type="button">Editar</button></td></tr>
               <tr data-search-row><td>Rafael Lima</td><td>rafael@metalforte.com</td><td>Comprador t&eacute;cnico</td><td>Compras</td><td><span class="badge success">Ativo</span></td><td><button class="table-action js-alert" type="button">Editar</button></td></tr>
-              <tr data-search-row><td>Bruna Castro</td><td>bruna@metalforte.com</td><td>Financeiro</td><td>Financeiro</td><td><span class="badge warning">Pendente</span></td><td><button class="table-action js-alert" type="button">Reenviar convite</button></td></tr>
-              <tr data-search-row><td>Marcos Vieira</td><td>marcos@metalforte.com</td><td>Diretor industrial</td><td>Leitura</td><td><span class="badge muted">Inativo</span></td><td><button class="table-action js-alert" type="button">Ativar</button></td></tr>
+              <tr data-search-row><td>Bruna Castro</td><td>bruna@metalforte.com</td><td>Analista financeiro</td><td>Financeiro</td><td><span class="badge warning">Pendente</span></td><td><button class="table-action js-alert" type="button">Reenviar convite</button></td></tr>
+              <tr data-search-row><td>Marcos Vieira</td><td>marcos@metalforte.com</td><td>Diretor industrial</td><td>Produ&ccedil;&atilde;o</td><td><span class="badge muted">Inativo</span></td><td><button class="table-action js-alert" type="button">Ativar</button></td></tr>
             </tbody>
           </table>
         </div>

@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { JsonDatabaseService } from '../database/json-database.service';
 import { Usina } from './usina.entity';
 
 @Injectable()
 export class UsinaService {
-  constructor(@InjectRepository(Usina) private readonly repository: Repository<Usina>) {}
+  constructor(private readonly database: JsonDatabaseService) {}
+
   buscar(nome?: string, cnpj?: string) {
-    if (cnpj) return this.repository.findOneBy({ cnpj: cnpj.replace(/\D/g, '') });
-    return this.repository.createQueryBuilder('usina')
-      .where('LOWER(usina.nome) LIKE LOWER(:nome)', { nome: `%${nome || ''}%` }).getOne();
+    if (cnpj) {
+      const cleanCnpj = cnpj.replace(/\D/g, '');
+      return this.database.findOne<Usina>('usinas', usina => usina.cnpj === cleanCnpj);
+    }
+
+    const search = String(nome || '').toLowerCase();
+    return this.database.findOne<Usina>('usinas', usina => String(usina.nome || '').toLowerCase().includes(search));
   }
 }

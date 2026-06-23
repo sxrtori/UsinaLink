@@ -1,7 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { DataSource, Repository } from 'typeorm';
+import { JsonDatabaseService } from '../database/json-database.service';
 import { Empresa } from '../empresa/empresa.entity';
 import { Usina } from '../usina/usina.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -25,10 +24,10 @@ function validCpf(value: string) {
 
 @Injectable()
 export class UsuarioService {
-  constructor(@InjectRepository(Usuario) private readonly repository: Repository<Usuario>, private readonly dataSource: DataSource) {}
+  constructor(private readonly database: JsonDatabaseService) {}
 
   async login(dto: LoginDto) {
-    const user = await this.repository.createQueryBuilder('usuario').addSelect('usuario.senha').where('usuario.email = :email', { email: email(dto.email) }).getOne();
+    const user = await this.database.findOne<Usuario>('usuarios', usuario => usuario.email === email(dto.email));
     if (!user) throw new NotFoundException('Usuario nao encontrado');
     if (user.senha !== String(dto.senha || '')) throw new UnauthorizedException('Senha incorreta');
     if (user.tipo !== tipo(dto.tipo)) throw new ForbiddenException('Esta conta nao pertence a esta area de login');
@@ -53,26 +52,57 @@ export class UsuarioService {
     if (data.confirmarSenha && data.senha !== data.confirmarSenha) errors.push('Senha e confirmar senha precisam ser iguais.');
     if (data.tipo === 'pessoa_fisica' && (!data.cpf || !validCpf(data.cpf))) errors.push('CPF valido e obrigatorio.');
     if (['empresa', 'usina'].includes(data.tipo) && data.cnpj.length !== 14) errors.push('Informe um CNPJ valido no formato 00.000.000/0000-00.');
-    const duplicate = await this.repository.createQueryBuilder('u').where('u.email = :email', { email: data.email })
-      .orWhere(data.cpf ? 'u.cpf = :cpf' : '1 = 0', { cpf: data.cpf }).orWhere(data.cnpj ? 'u.cnpj = :cnpj' : '1 = 0', { cnpj: data.cnpj }).getOne();
+    const duplicate = await this.database.findOne<Usuario>(
+      'usuarios',
+      usuario => usuario.email === data.email || Boolean(data.cpf && usuario.cpf === data.cpf) || Boolean(data.cnpj && usuario.cnpj === data.cnpj)
+    );
     if (duplicate?.email === data.email) errors.push('E-mail ja cadastrado.');
     if (data.cpf && duplicate?.cpf === data.cpf) errors.push('CPF ja cadastrado.');
     if (data.cnpj && duplicate?.cnpj === data.cnpj) errors.push('CNPJ ja cadastrado.');
     if (errors.length) throw new BadRequestException({ message: 'Nao foi possivel cadastrar.', errors });
 
-    return this.dataSource.transaction(async manager => {
-      const linkedId = `${data.tipo}-${randomUUID()}`;
-      const user = manager.create(Usuario, {
-        id: `user-${randomUUID()}`, tipo: data.tipo, nome: data.nome, email: data.email, senha: data.senha,
-        cpf: data.cpf || null, cnpj: data.cnpj || null, telefone: data.telefone || null,
-        empresaId: data.tipo === 'empresa' ? linkedId : null, usinaId: data.tipo === 'usina' ? linkedId : null,
-        pessoaFisicaId: data.tipo === 'pessoa_fisica' ? linkedId : null
+    const linkedId = `${data.tipo}-${randomUUID()}`;
+    const user: Usuario = {
+      id: `user-${randomUUID()}`,
+      tipo: data.tipo,
+      nome: data.nome,
+      email: data.email,
+      senha: data.senha,
+      cpf: data.cpf || null,
+      cnpj: data.cnpj || null,
+      telefone: data.telefone || null,
+      empresaId: data.tipo === 'empresa' ? linkedId : null,
+      usinaId: data.tipo === 'usina' ? linkedId : null,
+      pessoaFisicaId: data.tipo === 'pessoa_fisica' ? linkedId : null
+    };
+
+    await this.database.insert<Usuario>('usuarios', user);
+
+    if (data.tipo === 'empresa') {
+      await this.database.insert<Empresa>('empresas', {
+        id: linkedId,
+        nome: data.nome,
+        cnpj: data.cnpj,
+        email: data.email,
+        telefone: data.telefone,
+        responsavel: data.responsavel,
+        cargo: data.cargo
       });
-      await manager.save(user);
-      if (data.tipo === 'empresa') await manager.save(manager.create(Empresa, { id: linkedId, nome: data.nome, cnpj: data.cnpj, email: data.email, telefone: data.telefone, responsavel: data.responsavel, cargo: data.cargo }));
-      if (data.tipo === 'usina') await manager.save(manager.create(Usina, { id: linkedId, nome: data.nome, cnpj: data.cnpj, email: data.email, telefone: data.telefone, responsavel: data.responsavel, especialidade: data.especialidade }));
-      const { senha: _, ...safeUser } = user;
-      return safeUser;
-    });
+    }
+
+    if (data.tipo === 'usina') {
+      await this.database.insert<Usina>('usinas', {
+        id: linkedId,
+        nome: data.nome,
+        cnpj: data.cnpj,
+        email: data.email,
+        telefone: data.telefone,
+        responsavel: data.responsavel,
+        especialidade: data.especialidade
+      });
+    }
+
+    const { senha: _, ...safeUser } = user;
+    return safeUser;
   }
 }

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento do Pedido | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-user-role="empresa">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav" data-role-nav="empresa">
+        <a href="dashboard-empresa.html" data-icon="D">Dashboard empresa</a>
+        <a href="dashboard-pessoa-juridica.html" data-icon="P">Pe&ccedil;as comerciais</a>
+        <a href="perfil-empresa.html" data-icon="I">Perfil</a>
+        <a href="funcionarios.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html" data-icon="S">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html" data-icon="R">Propostas recebidas</a>
+        <a class="active" href="historico-pedidos.html" data-icon="H">Hist&oacute;rico de pedidos</a>
+        <a href="avaliacoes.html" data-icon="A">Avalia&ccedil;&otilde;es</a>
+        <a href="solicitacoes-bloqueio-usina.html" data-icon="B">Usinas bloqueadas</a>
+        <a href="index.html" data-icon="X">Sair</a>
+      </nav>
+    </aside>
+    <main class="app-main" data-payment-page>
+      <header class="page-header premium-header">
+        <div>
+          <span class="eyebrow">Pedido <strong data-order-number></strong></span>
+          <h1>Pagamento do pedido</h1>
+          <p>Simula&ccedil;&atilde;o visual para testes locais. N&atilde;o informe dados reais de cart&atilde;o.</p>
+        </div>
+        <a class="btn btn-ghost" href="pagamentos.html">Voltar</a>
+      </header>
+      <section class="payment-layout">
+        <div class="payment-main">
+          <article class="card payment-panel">
+            <span class="eyebrow">Resumo industrial</span>
+            <h2 data-payment-title>Pedido industrial</h2>
+            <p data-payment-description></p>
+            <div class="action-modal-grid payment-facts">
+              <div><span>Empresa</span><strong data-payment-company></strong></div>
+              <div><span>Usina</span><strong data-payment-plant></strong></div>
+              <div><span>Quantidade</span><strong data-payment-quantity></strong></div>
+              <div><span>Valor unit&aacute;rio/base</span><strong data-payment-unit></strong></div>
+              <div><span>Total</span><strong data-payment-total></strong></div>
+              <div><span>Prazo</span><strong data-payment-deadline></strong></div>
+              <div><span>Endere&ccedil;o</span><strong data-payment-address></strong></div>
+            </div>
+          </article>
+          <article class="card payment-panel">
+            <span class="eyebrow">Forma de pagamento</span>
+            <input id="payment-method" type="hidden" value="PIX">
+            <div class="payment-methods" role="tablist" aria-label="Formas de pagamento">
+              <button class="payment-method" type="button" data-payment-method="PIX">PIX</button>
+              <button class="payment-method" type="button" data-payment-method="Cartao">Cart&atilde;o</button>
+              <button class="payment-method" type="button" data-payment-method="Boleto">Boleto</button>
+            </div>
+            <div class="method-panel" data-method-panel="PIX">
+              <div class="qr-placeholder" aria-label="QR Code ficticio">QR</div>
+              <p>Chave PIX fict&iacute;cia: <strong>pix-teste@usinalink.com</strong></p>
+              <button class="btn btn-ghost btn-small" type="button" data-copy-pix>Copiar chave</button>
+            </div>
+            <div class="method-panel" data-method-panel="Cartao" hidden>
+              <div class="form-grid">
+                <label class="field">Nome no cart&atilde;o<span class="input-wrap"><input data-card-field data-min="3" type="text" placeholder="Nome ficticio"></span><small class="field-message">Informe o nome.</small></label>
+                <label class="field">N&uacute;mero fict&iacute;cio<span class="input-wrap"><input data-card-field data-min="12" type="text" inputmode="numeric" placeholder="4111 1111 1111 1111"></span><small class="field-message">Informe um n&uacute;mero fict&iacute;cio.</small></label>
+                <label class="field">Validade<span class="input-wrap"><input data-card-field data-min="4" type="text" placeholder="12/30"></span><small class="field-message">Informe a validade.</small></label>
+                <label class="field">CVV fict&iacute;cio<span class="input-wrap"><input data-card-field data-min="3" type="text" inputmode="numeric" placeholder="123"></span><small class="field-message">Informe o CVV.</small></label>
+              </div>
+            </div>
+            <div class="method-panel" data-method-panel="Boleto" hidden>
+              <p>Linha digit&aacute;vel fict&iacute;cia:</p>
+              <strong class="fake-code">34191.79001 01043.510047 91020.150008 8 98760000018500</strong>
+              <p>Vencimento: 3 dias &uacute;teis.</p>
+              <button class="btn btn-ghost btn-small" type="button" data-copy-boleto>Copiar boleto</button>
+            </div>
+          </article>
+        </div>
+        <aside class="card payment-summary">
+          <span class="eyebrow">Resumo</span>
+          <h2>Total do pedido</h2>
+          <dl>
+            <div><dt>Subtotal</dt><dd data-summary-subtotal></dd></div>
+            <div><dt>Desconto</dt><dd data-summary-discount></dd></div>
+            <div><dt>Taxas</dt><dd data-summary-taxes></dd></div>
+            <div class="total"><dt>Total</dt><dd data-summary-total></dd></div>
+          </dl>
+          <button class="btn full" type="button" data-confirm-payment>Confirmar pagamento</button>
+          <p class="test-warning">Ambiente de testes. Nenhuma cobran&ccedil;a real ser&aacute; realizada.</p>
+          <small>Os dados ficam salvos apenas no navegador via localStorage.</small>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/ui-utils.js"></script>
+  <script src="assets/js/mock-payments.js"></script>
+  <script src="assets/js/payment-service.js"></script>
+  <script src="assets/js/order-history.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

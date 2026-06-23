@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from '../database/database.module';
 import { PedidoModule } from '../pedido/pedido.module';
+import { SolicitacaoBloqueioUsinaModule } from '../solicitacao-bloqueio-usina/solicitacao-bloqueio-usina.module';
 import { PropostaController } from './proposta.controller';
-import { Proposta } from './proposta.entity';
 import { propostaProviders } from './proposta.provider';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Proposta]), PedidoModule],
+  imports: [DatabaseModule, PedidoModule, SolicitacaoBloqueioUsinaModule],
   controllers: [PropostaController],
   providers: [...propostaProviders]
 })

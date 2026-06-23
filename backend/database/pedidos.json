@@ -28,5 +28,20 @@
     "descricao": "Flange para linha industrial com acabamento usinado e inspecao dimensional.",
     "arquivo": "flange-industrial.dwg",
     "status": "Em analise"
+  },
+  {
+    "id": "pedido-3",
+    "empresaId": "empresa-1",
+    "empresa": "Metal Forte",
+    "peca": "Polia industrial",
+    "categoria": "Usinagem",
+    "material": "Aluminio 6061",
+    "quantidade": "30 unidades",
+    "prazo": "15 dias",
+    "regiao": "Sudeste",
+    "urgencia": "Normal",
+    "descricao": "Polia industrial finalizada para teste do fluxo de avaliacao.",
+    "arquivo": "polia-industrial.pdf",
+    "status": "Concluido"
   }
 ]

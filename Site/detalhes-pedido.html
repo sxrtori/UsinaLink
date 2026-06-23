@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Pedido | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
+      <nav class="side-nav" data-role-nav="empresa">
+        <a href="dashboard-empresa.html" data-icon="D">Dashboard empresa</a>
+        <a href="dashboard-pessoa-juridica.html" data-icon="P">Pe&ccedil;as comerciais</a>
+        <a href="perfil-empresa.html" data-icon="I">Perfil</a>
+        <a href="funcionarios.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html" data-icon="S">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html" data-icon="R">Propostas recebidas</a>
+        <a class="active" href="historico-pedidos.html" data-icon="H">Hist&oacute;rico de pedidos</a>
+        <a href="avaliacoes.html" data-icon="A">Avalia&ccedil;&otilde;es</a>
+        <a href="solicitacoes-bloqueio-usina.html" data-icon="B">Usinas bloqueadas</a>
+        <a href="index.html" data-icon="X">Sair</a>
+      </nav>
+    </aside>
+    <main class="app-main" data-details-page>
+      <header class="page-header premium-header">
+        <div><span class="eyebrow">Detalhes do pedido</span><h1 data-detail-title>Pedido</h1><p data-detail-description></p></div>
+        <div class="card-actions"><a class="btn btn-ghost" href="historico-pedidos.html">Voltar</a><a class="btn" data-detail-pay href="pagamento-pedido.html">Pagar pedido</a><a class="btn btn-ghost" data-detail-receipt href="confirmacao-pedido.html" hidden>Ver comprovante</a></div>
+      </header>
+      <section class="detail-layout">
+        <article class="card detail-card">
+          <h2>Dados do pedido</h2>
+          <div class="action-modal-grid" data-detail-facts></div>
+        </article>
+        <article class="card detail-card">
+          <h2>Linha do tempo</h2>
+          <ol class="timeline" data-detail-timeline></ol>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth-guard.js"></script>
+  <script src="assets/js/ui-utils.js"></script>
+  <script src="assets/js/mock-payments.js"></script>
+  <script src="assets/js/payment-service.js"></script>
+  <script src="assets/js/order-history.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

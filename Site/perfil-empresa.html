@@ -11,12 +11,16 @@
     <aside class="sidebar">
       <a class="brand" href="index.html"><span class="brand-icon">US</span><span>Usinalink</span></a>
       <nav class="side-nav" data-role-nav="empresa">
-        <a href="dashboard-empresa.html">Dashboard empresa</a>
-        <a class="active" href="perfil-empresa.html">Perfil</a>
-        <a href="funcionarios.html">Funcion&aacute;rios</a>
-        <a href="solicitacoes.html">Solicita&ccedil;&otilde;es</a>
-        <a href="propostas.html">Propostas</a>
-        <a href="index.html">Sair</a>
+        <a href="dashboard-empresa.html" data-icon="D">Dashboard empresa</a>
+        <a href="dashboard-pessoa-juridica.html" data-icon="P">Pe&ccedil;as comerciais</a>
+        <a class="active" href="perfil-empresa.html" data-icon="I">Perfil</a>
+        <a href="funcionarios.html" data-icon="F">Funcion&aacute;rios</a>
+        <a href="solicitacoes.html" data-icon="S">Solicita&ccedil;&otilde;es</a>
+        <a href="propostas.html" data-icon="R">Propostas recebidas</a>
+        <a href="historico-pedidos.html" data-icon="H">Hist&oacute;rico de pedidos</a>
+        <a href="avaliacoes.html" data-icon="A">Avalia&ccedil;&otilde;es</a>
+        <a href="solicitacoes-bloqueio-usina.html" data-icon="B">Usinas bloqueadas</a>
+        <a href="index.html" data-icon="X">Sair</a>
       </nav>
     </aside>
 
@@ -44,10 +48,24 @@
 
         <article class="card form-panel profile-form-card">
           <div class="panel-heading with-divider">
-            <h2 id="profile-section-title">Informa&ccedil;&otilde;es gerais</h2>
-            <p id="profile-section-subtitle">Dados principais exibidos no perfil comercial da organiza&ccedil;&atilde;o.</p>
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+              <div>
+                <h2 id="profile-section-title">Informa&ccedil;&otilde;es gerais</h2>
+                <p id="profile-section-subtitle">Dados principais exibidos no perfil comercial da organiza&ccedil;&atilde;o.</p>
+              </div>
+              <button class="btn btn-small js-toggle-profile-edit" type="button">Editar perfil</button>
+            </div>
           </div>
-          <form class="form-grid js-demo-form" id="profile-dynamic-form"></form>
+          <div id="profile-view-mode" class="profile-view-content">
+            <div class="form-grid">
+              <div class="field"><span>Raz&atilde;o Social</span><div class="view-value">Metal Forte Componentes Industriais Ltda.</div></div>
+              <div class="field"><span>Nome Fantasia</span><div class="view-value">Metal Forte</div></div>
+              <div class="field"><span>Setor de Atua&ccedil;&atilde;o</span><div class="view-value">Ind&uacute;stria metalmec&acirc;nica</div></div>
+              <div class="field"><span>Porte da Empresa</span><div class="view-value">M&eacute;dio porte</div></div>
+              <div class="field span-2"><span>Descri&ccedil;&atilde;o / Apresenta&ccedil;&atilde;o</span><div class="view-value">Empresa especializada em aquisi&ccedil;&atilde;o e manuten&ccedil;&atilde;o de componentes industriais para linhas de produ&ccedil;&atilde;o.</div></div>
+            </div>
+          </div>
+          <form class="form-grid js-demo-form is-hidden" id="profile-dynamic-form"></form>
         </article>
       </section>
     </main>
