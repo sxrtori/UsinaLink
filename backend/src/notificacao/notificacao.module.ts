@@ -1,2 +1,2 @@
-import { Module } from '@nestjs/common';import { TypeOrmModule } from '@nestjs/typeorm';import { AuthModule } from '../auth/auth.module';import { Notificacao } from '../common/entities/core.entities';import { NotificacaoController } from './notificacao.controller';
-@Module({imports:[TypeOrmModule.forFeature([Notificacao]),AuthModule],controllers:[NotificacaoController]}) export class NotificacaoModule{}
+import { Module } from '@nestjs/common';import { AuthModule } from '../auth/auth.module';import { NotificacaoController } from './notificacao.controller';
+@Module({imports:[AuthModule],controllers:[NotificacaoController]}) export class NotificacaoModule{}

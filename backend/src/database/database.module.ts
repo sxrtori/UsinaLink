@@ -1,20 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Global, Module } from '@nestjs/common';
+import { JsonDatabaseService } from './json-database.service';
+import { SeedDemoService } from './seed-demo';
+import { AuthModule } from '../auth/auth.module';
 
-@Module({
-  imports: [
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.getOrThrow<string>('DATABASE_URL'),
-        ssl: { rejectUnauthorized: false },
-        autoLoadEntities: true,
-        synchronize: false
-      })
-    })
-  ]
-})
+@Global()
+@Module({ imports: [AuthModule], providers: [JsonDatabaseService, SeedDemoService], exports: [JsonDatabaseService] })
 export class DatabaseModule {}

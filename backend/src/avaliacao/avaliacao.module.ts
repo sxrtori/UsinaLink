@@ -1,1 +1,4 @@
-import { Module } from '@nestjs/common';import { TypeOrmModule } from '@nestjs/typeorm';import { AvaliacaoEntrega, Pedido, Proposta } from '../common/entities/core.entities';import { AvaliacaoController } from './avaliacao.controller';import { AvaliacaoService } from './avaliacao.service';@Module({imports:[TypeOrmModule.forFeature([AvaliacaoEntrega,Pedido,Proposta])],controllers:[AvaliacaoController],providers:[AvaliacaoService]}) export class AvaliacaoModule{}
+import { Module } from '@nestjs/common';
+import { AvaliacaoController } from './avaliacao.controller';
+import { AvaliacaoService } from './avaliacao.service';
+@Module({ controllers:[AvaliacaoController], providers:[AvaliacaoService] }) export class AvaliacaoModule{}
