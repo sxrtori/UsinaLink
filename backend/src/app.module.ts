@@ -1,24 +1,39 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './controllers/app.controller';
-import { AuthController } from './controllers/auth.controller';
-import { CadastroController } from './controllers/cadastro.controller';
-import { LookupController } from './controllers/lookup.controller';
-import { PropostasController } from './controllers/propostas.controller';
-import { FuncionariosController } from './controllers/funcionarios.controller';
-import { PedidosController } from './controllers/pedidos.controller';
-import { DatabaseService } from './services/database.service';
-import { CnpjService } from './services/cnpj.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { EmpresaModule } from './empresa/empresa.module';
+import { FuncionarioModule } from './funcionario/funcionario.module';
+import { PedidoModule } from './pedido/pedido.module';
+import { PropostaModule } from './proposta/proposta.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { UsinaModule } from './usina/usina.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
-  controllers: [
-    AppController,
-    AuthController,
-    CadastroController,
-    LookupController,
-    PropostasController,
-    FuncionariosController,
-    PedidosController
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        host: config.getOrThrow<string>('DB_HOST'),
+        port: config.get<number>('DB_PORT', 3306),
+        username: config.getOrThrow<string>('DB_USERNAME'),
+        password: config.getOrThrow<string>('DB_PASSWORD'),
+        database: config.getOrThrow<string>('DB_DATABASE'),
+        autoLoadEntities: true,
+        synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true'
+      })
+    }),
+    EmpresaModule,
+    UsinaModule,
+    UsuarioModule,
+    FuncionarioModule,
+    PedidoModule,
+    PropostaModule,
+    DatabaseModule
   ],
-  providers: [DatabaseService, CnpjService]
+  controllers: [AppController]
 })
 export class AppModule {}
