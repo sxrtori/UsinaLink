@@ -1,2 +1,41 @@
-import { Injectable, NotFoundException } from '@nestjs/common';import { JsonDatabaseService } from '../database/json-database.service';
-@Injectable() export class EmpresaService{constructor(private db:JsonDatabaseService){} async buscar(nome?:string,cnpj?:string){const rows=await this.db.readAll<any>('empresas'); if(cnpj)return rows.find(e=>e.cnpj===String(cnpj).replace(/\D/g,'')); const s=String(nome||'').toLowerCase(); return rows.find(e=>String(e.nomeFantasia||e.razaoSocial||'').toLowerCase().includes(s));} async porId(id:any){const r=await this.db.findOne<any>('empresas',e=>String(e.idEmpresa)===String(id)||String(e.id)===String(id));if(!r)throw new NotFoundException('Empresa não encontrada.');return r}}
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Empresa } from '../common/entities/core.entities';
+
+@Injectable()
+export class EmpresaService {
+  constructor(@InjectRepository(Empresa) private empresaRepo: Repository<Empresa>) {}
+
+  async buscar(nome?: string, cnpj?: string) {
+    if (cnpj) {
+      const cnpjLimpo = String(cnpj).replace(/\D/g, '');
+      return await this.empresaRepo.findOne({ where: { cnpj: cnpjLimpo } });
+    }
+    
+    if (nome) {
+      const nomeBusca = String(nome).toLowerCase();
+      return await this.empresaRepo.findOne({
+        where: [
+          { nomeFantasia: nomeBusca },
+          { razaoSocial: nomeBusca }
+        ]
+      });
+    }
+    
+    return null;
+  }
+
+  async porId(id: any) {
+    const idNumerico = Number(id);
+    const empresa = await this.empresaRepo.findOne({ 
+      where: { idEmpresa: idNumerico } 
+    });
+    
+    if (!empresa) {
+      throw new NotFoundException('Empresa não encontrada.');
+    }
+    
+    return empresa;
+  }
+}
