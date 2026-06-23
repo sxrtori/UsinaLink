@@ -50,7 +50,7 @@
         return;
       }
       try {
-        renderInvite(await window.UsinaLinkApi.get(`/api/funcionarios/${encodeURIComponent(inviteId)}`));
+        renderInvite(await window.UsinaLinkApi.get(`/funcionarios/${encodeURIComponent(inviteId)}`));
       } catch (error) {
         statusElement.textContent = error.message;
         button.disabled = true;
@@ -60,7 +60,7 @@
     button.addEventListener("click", async () => {
       if (!funcionario) return;
       try {
-        await window.UsinaLinkApi.put(`/api/funcionarios/${encodeURIComponent(inviteId)}/aceitar-convite`, {});
+        await window.UsinaLinkApi.put(`/funcionarios/${encodeURIComponent(inviteId)}/aceitar-convite`, {});
         statusElement.textContent = "Convite aceito com sucesso. Seu status agora e Ativo.";
         button.disabled = true;
       } catch (error) {

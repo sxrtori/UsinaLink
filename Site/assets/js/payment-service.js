@@ -5,13 +5,13 @@
 
   async function apiGet(path) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.get(path);
-    const response = await fetch(`http://localhost:3001${path}`);
+    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`);
     if (!response.ok) throw new Error("API indisponivel");
     return response.json();
   }
 
   async function loadSourceData() {
-    const [orders, proposals] = await Promise.all([apiGet("/api/pedidos/meus"), apiGet("/api/propostas/recebidas")]);
+    const [orders, proposals] = await Promise.all([apiGet("/pedidos/meus"), apiGet("/propostas/recebidas")]);
     return { orders, proposals, source: "api" };
   }
 
@@ -39,7 +39,7 @@
 
   async function getOrders() {
     const { orders, proposals, source } = await loadSourceData();
-    const payments = await apiGet("/api/pagamentos").catch(() => []);
+    const payments = await apiGet("/pagamentos").catch(() => []);
     const session = currentSession();
     let filtered = orders;
     if (session.tipo === "empresa" && session.empresaId) filtered = orders.filter(order => !order.empresaId || order.empresaId === session.empresaId);
@@ -52,8 +52,8 @@
     return orders.find(order => order.id === id) || orders[0] || null;
   }
 
-  function savePayment(order, method) {
-    const payments = await apiGet("/api/pagamentos").catch(() => []);
+  async function savePayment(order, method) {
+    const payments = await apiGet("/pagamentos").catch(() => []);
     const totals = order.totals || ui().calculateTotals(order);
     const payment = {
       id: `pay-${Date.now()}`,

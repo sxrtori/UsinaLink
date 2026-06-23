@@ -11,14 +11,14 @@
 
   async function apiGet(path) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.get(path);
-    const response = await fetch(`http://localhost:3001${path}`);
+    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`);
     if (!response.ok) throw new Error("Nao foi possivel carregar os dados.");
     return response.json();
   }
 
   async function apiPost(path, body) {
     if (window.UsinaLinkApi) return window.UsinaLinkApi.post(path, body);
-    const response = await fetch(`http://localhost:3001${path}`, {
+    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -30,7 +30,7 @@
 
   async function apiPatch(path, body) {
     if (window.UsinaLinkApi?.patch) return window.UsinaLinkApi.patch(path, body);
-    const response = await fetch(`http://localhost:3001${path}`, {
+    const response = await fetch(`http://localhost:3000/api${String(path).replace(/^\/api(?=\/|$)/, '')}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -96,9 +96,9 @@
       root.dataset.state = "loading";
       const empresaId = state.empresaId || "empresa-1";
       const [reviews, orders, proposals] = await Promise.all([
-        apiGet(`/api/avaliacoes/empresa/${encodeURIComponent(empresaId)}`),
-        apiGet("/api/pedidos"),
-        apiGet("/api/propostas")
+        apiGet(`/avaliacoes/empresa/${encodeURIComponent(empresaId)}`),
+        apiGet("/pedidos"),
+        apiGet("/propostas")
       ]);
       const reviewed = new Set(reviews.map(item => item.pedidoId));
       const available = orders.filter(order => order.empresaId === empresaId && /conclu/i.test(order.status || "") && proposals.some(proposal => proposal.pedidoId === order.id && /aceita/i.test(proposal.status || "")) && !reviewed.has(order.id));
@@ -127,7 +127,7 @@
       button.disabled = true;
       button.textContent = "Enviando...";
       try {
-        await apiPost("/api/avaliacoes", {
+        await apiPost("/avaliacoes", {
           pedidoId: data.get("pedidoId"),
           notaGeral: Number(data.get("notaGeral")),
           qualidade: Number(data.get("qualidade")),
@@ -154,8 +154,8 @@
     const usinaId = state.usinaId || "usina-1";
     try {
       const [summary, reviews] = await Promise.all([
-        apiGet(`/api/avaliacoes/usina/${encodeURIComponent(usinaId)}/resumo`),
-        apiGet(`/api/avaliacoes/usina/${encodeURIComponent(usinaId)}`)
+        apiGet(`/avaliacoes/usina/${encodeURIComponent(usinaId)}/resumo`),
+        apiGet(`/avaliacoes/usina/${encodeURIComponent(usinaId)}`)
       ]);
       document.querySelector("[data-review-average]").textContent = summary.mediaGeral || "0";
       document.querySelector("[data-review-count]").textContent = summary.quantidade || "0";
@@ -168,7 +168,7 @@
           event.preventDefault();
           const card = form.closest("[data-review-id]");
           const data = new FormData(form);
-          await apiPost(`/api/avaliacoes/${card.dataset.reviewId}/resposta`, { usinaId, respostaDaUsina: data.get("respostaDaUsina") });
+          await apiPost(`/avaliacoes/${card.dataset.reviewId}/resposta`, { usinaId, respostaDaUsina: data.get("respostaDaUsina") });
           notify("Resposta publicada.", "success");
           await loadPlantReviews();
         });
@@ -186,8 +186,8 @@
     const form = document.querySelector("[data-block-form]");
     try {
       const [requests, proposals] = await Promise.all([
-        apiGet(`/api/solicitacoes-bloqueio-usina/minhas?empresaId=${encodeURIComponent(empresaId)}`),
-        apiGet(`/api/propostas/recebidas`)
+        apiGet(`/solicitacoes-bloqueio-usina/minhas?empresaId=${encodeURIComponent(empresaId)}`),
+        apiGet(`/propostas/recebidas`)
       ]);
       const usinas = [...new Map(proposals.map(proposal => [proposal.usinaId, proposal])).values()];
       const usinaSelect = document.querySelector("[data-block-usina]");
@@ -202,7 +202,7 @@
           ${request.status === "pendente" ? `<button class="table-action" type="button" data-cancel-block="${request.id}">Cancelar solicitacao</button>` : ""}
         </article>`).join("") : '<div class="empty-state"><strong>Nenhuma solicitacao aberta</strong><span>Use o formulario para enviar uma solicitacao de moderacao.</span></div>';
       root.querySelectorAll("[data-cancel-block]").forEach(button => button.addEventListener("click", async () => {
-        await apiPatch(`/api/solicitacoes-bloqueio-usina/${button.dataset.cancelBlock}/cancelar`, { empresaId });
+        await apiPatch(`/solicitacoes-bloqueio-usina/${button.dataset.cancelBlock}/cancelar`, { empresaId });
         notify("Solicitacao cancelada.", "success");
         await loadBlockRequests();
       }));
@@ -222,7 +222,7 @@
       button.disabled = true;
       button.textContent = "Enviando...";
       try {
-        await apiPost("/api/solicitacoes-bloqueio-usina", {
+        await apiPost("/solicitacoes-bloqueio-usina", {
           empresaId: form.dataset.empresaId || session().empresaId || "empresa-1",
           usinaId: data.get("usinaId"),
           pedidoId: data.get("pedidoId") || undefined,

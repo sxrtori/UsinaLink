@@ -279,7 +279,7 @@ if (signupForm) {
     const nameInput = signupForm.querySelector('[data-field-key="nome"]');
     const name = nameInput?.value.trim();
     if (!name || name.length < 3) return;
-    const path = type === "usina" ? `/api/usinas/buscar?nome=${encodeURIComponent(name)}` : `/api/empresas/buscar?nome=${encodeURIComponent(name)}`;
+    const path = type === "usina" ? `/usinas/buscar?nome=${encodeURIComponent(name)}` : `/empresas/buscar?nome=${encodeURIComponent(name)}`;
     try {
       const data = await window.UsinaLinkApi.get(path);
       const fieldMap = {
@@ -346,7 +346,7 @@ if (signupForm) {
       return;
     }
 
-    window.UsinaLinkApi.post(`/api/cadastro/${apiType}`, payload)
+    window.UsinaLinkApi.post(`/cadastro/${apiType}`, payload)
       .then((result) => finishSignup(result.user))
       .catch((error) => showToast(error.message));
   });
@@ -381,7 +381,7 @@ document.querySelectorAll(".js-login-form").forEach((form) => {
 
     try {
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
-      const result = await window.UsinaLinkApi.post(`/api/auth/login/${tipo}`, {
+      const result = await window.UsinaLinkApi.post(`/auth/login/${tipo}`, {
         email: emailInput.value,
         senha: passwordInput.value
       });
@@ -662,7 +662,7 @@ async function loadEmployeesFromApi() {
   document.querySelectorAll("[data-employee-table]").forEach(async (table) => {
     try {
       const context = table.dataset.employeeTable;
-      const employees = await window.UsinaLinkApi.get(`/api/funcionarios?contexto=${encodeURIComponent(context)}`);
+      const employees = await window.UsinaLinkApi.get(`/funcionarios?contexto=${encodeURIComponent(context)}`);
       table.innerHTML = employees.map(employeeRowMarkup).join("");
       table.querySelectorAll("tr").forEach(renderEmployeeRowActions);
     } catch {
@@ -784,7 +784,7 @@ async function loadProposalsFromApi() {
   const usinaTable = document.querySelector("body[data-user-role='usina'] tbody");
   if (document.body.dataset.userRole === "usina" && usinaTable && window.location.pathname.includes("propostas-usina")) {
     try {
-      const proposals = await window.UsinaLinkApi.get(`/api/propostas/enviadas`);
+      const proposals = await window.UsinaLinkApi.get(`/propostas/enviadas`);
       usinaTable.innerHTML = proposals.map(proposalRowMarkup).join("") || '<tr><td colspan="7">Nenhuma proposta enviada.</td></tr>';
     } catch (error) {
       showToast(error.message);
@@ -793,7 +793,7 @@ async function loadProposalsFromApi() {
   const empresaGrid = document.querySelector("body[data-user-role='empresa'] .proposal-grid");
   if (empresaGrid && window.location.pathname.includes("propostas")) {
     try {
-      const proposals = await window.UsinaLinkApi.get(`/api/propostas/recebidas`);
+      const proposals = await window.UsinaLinkApi.get(`/propostas/recebidas`);
       empresaGrid.innerHTML = proposals.map((item, index) => proposalCardMarkup(item, index === 0)).join("") || '<article class="card proposal-card"><h2>Nenhuma proposta recebida</h2><p>As propostas enviadas pelas usinas aparecerao aqui.</p></article>';
     } catch (error) {
       showToast(error.message);
@@ -826,7 +826,7 @@ function openEmployeeEdit(row) {
       showToast("Funcionario atualizado com sucesso");
     };
     if (window.UsinaLinkApi && row.dataset.employeeId) {
-      window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}`, {
+      window.UsinaLinkApi.put(`/funcionarios/${row.dataset.employeeId}`, {
         nome: data.get("name"),
         email: data.get("email"),
         cargo: data.get("role")
@@ -949,7 +949,7 @@ document.addEventListener("click", (event) => {
         row.classList.add("is-hidden");
         showToast("Proposta cancelada");
       };
-      if (window.UsinaLinkApi && row.dataset.proposalId) window.UsinaLinkApi.patch(`/api/propostas/${row.dataset.proposalId}/cancelar`, {}).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.proposalId) window.UsinaLinkApi.patch(`/propostas/${row.dataset.proposalId}/cancelar`, {}).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -961,7 +961,7 @@ document.addEventListener("click", (event) => {
   if (row && action === "Reenviar convite") {
     openSimpleConfirm({ title: "Reenviar convite", message: "Enviar um novo convite para este funcionario?", confirmText: "Reenviar convite", onConfirm: () => {
       if (window.UsinaLinkApi && row.dataset.employeeId) {
-        window.UsinaLinkApi.post(`/api/funcionarios/${row.dataset.employeeId}/reenviar-convite`, {}).then(() => showToast("Convite reenviado com sucesso")).catch((error) => showToast(error.message));
+        window.UsinaLinkApi.post(`/funcionarios/${row.dataset.employeeId}/reenviar-convite`, {}).then(() => showToast("Convite reenviado com sucesso")).catch((error) => showToast(error.message));
       } else showToast("Convite reenviado com sucesso");
     } });
     return;
@@ -969,7 +969,7 @@ document.addEventListener("click", (event) => {
   if (row && action === "Cancelar convite") {
     openSimpleConfirm({ title: "Cancelar convite", message: "Deseja cancelar este convite pendente?", confirmText: "Cancelar convite", onConfirm: () => {
       const finish = () => { setRowStatus(row, "Inativo"); showToast("Convite cancelado"); };
-      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -977,7 +977,7 @@ document.addEventListener("click", (event) => {
   if (row && action === "Ativar") {
     openSimpleConfirm({ title: "Ativar funcionario", message: "Deseja ativar este funcionario novamente?", confirmText: "Ativar", onConfirm: () => {
       const finish = () => { setRowStatus(row, "Ativo"); showToast("Funcionario ativado com sucesso"); };
-      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/ativar`, {}).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/funcionarios/${row.dataset.employeeId}/ativar`, {}).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -985,7 +985,7 @@ document.addEventListener("click", (event) => {
   if (row && action === "Excluir") {
     openSimpleConfirm({ title: "Inativar funcionario", message: "Este funcionario ficara Inativo. Para remover definitivamente, clique em Excluir definitivamente depois.", confirmText: "Inativar", onConfirm: () => {
       const finish = () => { setRowStatus(row, "Inativo"); showToast("Funcionario inativado"); };
-      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/api/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.put(`/funcionarios/${row.dataset.employeeId}/inativar`, {}).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -993,7 +993,7 @@ document.addEventListener("click", (event) => {
   if (row && action === "Excluir definitivamente") {
     openSimpleConfirm({ title: "Excluir definitivamente", message: "Esta acao remove o funcionario da tabela e do banco.", confirmText: "Excluir definitivamente", onConfirm: () => {
       const finish = () => { row.remove(); showToast("Funcionario excluido definitivamente"); };
-      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.delete(`/api/funcionarios/${row.dataset.employeeId}`).then(finish).catch((error) => showToast(error.message));
+      if (window.UsinaLinkApi && row.dataset.employeeId) window.UsinaLinkApi.delete(`/funcionarios/${row.dataset.employeeId}`).then(finish).catch((error) => showToast(error.message));
       else finish();
     } });
     return;
@@ -1125,7 +1125,7 @@ if (employeeForm) {
       showToast("Funcion\u00e1rio adicionado com sucesso");
     };
     if (window.UsinaLinkApi) {
-      window.UsinaLinkApi.post("/api/funcionarios", {
+      window.UsinaLinkApi.post("/funcionarios", {
         contexto: context,
         nome: data.get("name"),
         email: data.get("email"),
@@ -1197,7 +1197,7 @@ document.querySelectorAll(".js-send-proposal").forEach((button) => {
       button.disabled = true;
       button.textContent = "Enviando...";
       if (!window.UsinaLinkApi) throw new Error("Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando.");
-      await window.UsinaLinkApi.post("/api/propostas", {
+      await window.UsinaLinkApi.post("/propostas", {
         idPedido: pedidoId,
         valor: formatCurrencyLike(value.value, "R$ 0,00"),
         prazo: deadline.value.trim(),
