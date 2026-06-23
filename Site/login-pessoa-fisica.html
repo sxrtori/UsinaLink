@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Pessoa Fisica | Usinalink</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="brand auth-brand" href="index.html">
+      <span class="brand-icon" aria-hidden="true">US</span>
+      <span>Usinalink</span>
+    </a>
+    <section class="card auth-card">
+      <h1>Entrar como pessoa fisica</h1>
+      <p>Acesse sua conta do UsinaLink.</p>
+      <form class="form js-login-form" data-login-type="pessoa_fisica" data-redirect="index.html" novalidate>
+        <label class="field">
+          <span>E-mail</span>
+          <div class="input-icon"><span>@</span><input id="login-pessoa-email" name="email" type="email" placeholder="usuario@email.com" required></div>
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <div class="input-icon"><span>*</span><input id="login-pessoa-senha" name="senha" type="password" placeholder="Digite sua senha" required></div>
+        </label>
+        <button class="btn full" type="submit">Entrar</button>
+      </form>
+      <a class="text-link centered" href="cadastro.html">Criar nova conta</a>
+    </section>
+  </main>
+  <script src="assets/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
