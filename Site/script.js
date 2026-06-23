@@ -42,7 +42,7 @@ const signupConfig = {
     types: ["text", "text", "email", "tel", "password", "password"],
     keys: ["nome", "cpf", "email", "telefone", "senha", "confirmarSenha"],
     button: "Cadastrar pessoa fisica",
-    redirect: "login.html",
+    redirect: "login-pessoa-fisica.html",
     orange: false
   },
   usina: {
@@ -173,7 +173,7 @@ function collectSignupPayload(form, type) {
     payload[key] = key === "email" ? input.value.trim().toLowerCase() : input.value.trim();
     if (key === "cpf" || key === "cnpj" || key === "telefone") payload[key] = onlyDigits(input.value);
   });
-  if (type === "empresa" || type === "usina") payload.tipo = type;
+  payload.tipo = type === "pessoa" ? "pessoa_fisica" : type;
   return payload;
 }
 
@@ -214,13 +214,13 @@ function updateSignupForm(type) {
   form.dataset.accountType = type;
   const loginLink = document.querySelector("#signup-login-link");
   if (loginLink) {
-    loginLink.href = type === "usina" ? "login-usina.html" : type === "empresa" ? "login-empresa.html" : "login.html";
+    loginLink.href = type === "usina" ? "login-usina.html" : type === "empresa" ? "login-empresa.html" : "login-pessoa-fisica.html";
   }
 }
 
 function getSignupTypeFromUrl() {
-  const raw = new URLSearchParams(window.location.search).get("tipo");
-  if (!raw) return "";
+  const raw = new URLSearchParams(window.location.search).get("tipo") || window.location.pathname.split("/").pop().replace("cadastro-", "").replace(".html", "");
+  if (!raw || raw === "cadastro") return "";
   if (raw === "pessoa_fisica" || raw === "pessoa-fisica") return "pessoa";
   if (raw === "empresa" || raw === "usina") return raw;
   return "";
@@ -336,11 +336,6 @@ if (signupForm) {
     }
 
     const type = signupForm.dataset.accountType || document.querySelector('.choice-card input[type="radio"]:checked')?.value || "empresa";
-    if (type === "pessoa") {
-      showToast("Cadastro de pessoa fisica ainda nao esta disponivel no backend.");
-      return;
-    }
-
     if (!window.UsinaLinkApi?.post) {
       showToast("Nao foi possivel carregar o cliente da API.");
       return;
@@ -353,11 +348,11 @@ if (signupForm) {
         submitButton.disabled = true;
         submitButton.textContent = "Cadastrando...";
       }
-      await window.UsinaLinkApi.post(`/cadastro/${type}`, payload);
+      await window.UsinaLinkApi.post(`/cadastro/${type === "pessoa" ? "pessoa_fisica" : type}`, payload);
       showToast("Cadastro realizado com sucesso");
       window.setTimeout(() => { window.location.href = signupForm.dataset.redirect; }, 800);
     } catch (error) {
-      if (error instanceof TypeError && error.message.includes("fetch")) {
+      if (error instanceof TypeError) {
         showToast("Nao foi possivel conectar ao servidor.");
       } else {
         showToast(error.message);
@@ -404,14 +399,14 @@ document.querySelectorAll(".js-login-form").forEach((form) => {
         email: emailInput.value.trim().toLowerCase(),
         senha: passwordInput.value
       });
-      localStorage.setItem("accessToken", result.accessToken);
+      localStorage.setItem("accessToken", result.accessToken || result.access_token);
       localStorage.setItem("tipoUsuario", result.tipoUsuario);
       localStorage.setItem("nome", result.nome || "");
       sessionStorage.removeItem("usinalinkSession");
       showToast("Login realizado com sucesso");
       window.setTimeout(() => { window.location.href = redirect; }, 500);
     } catch (error) {
-      if (error instanceof TypeError && error.message.includes("fetch")) {
+      if (error instanceof TypeError) {
         setFieldState(emailInput, "Nao foi possivel conectar ao servidor.");
         showToast("Nao foi possivel conectar ao servidor.");
       } else {
